@@ -19,12 +19,12 @@
       <div class="lock-mark">◉</div>
       <p class="eyebrow" data-i18n="encryptedLocalVault">Vault locale cifrato</p>
       <h1>Blood Vault</h1>
-      <p id="lockIntro" class="muted"></p>
+      <p id="lockIntro" class="muted">Crea un PIN di almeno 6 cifre per proteggere il vault locale.</p>
       <button id="biometricUnlockBtn" class="secondary-btn hidden" type="button">Sblocca con biometria</button>
       <div class="lock-separator"><span>oppure</span></div>
       <label class="field"><span data-i18n="pin">PIN</span><input id="pinInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
       <label id="pinConfirmField" class="field"><span data-i18n="confirmPin">Conferma PIN</span><input id="pinConfirmInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
-      <button id="unlockBtn" class="primary-btn"></button>
+      <button id="unlockBtn" class="primary-btn" type="button">Crea vault</button>
       <p id="lockError" class="error-text" role="alert"></p>
       <p class="caption" data-i18n="pinWarning">Il PIN non viene salvato. Se lo perdi, il vault non può essere recuperato senza un backup e la relativa password.</p>
     </section>
@@ -57,7 +57,6 @@
   <template id="measurementTemplate"><div class="measurement-row glass-subtle"><label class="field grow"><span data-i18n="test">Esame</span><input class="test-search" list="loincOptions" placeholder="Nome o codice LOINC" required /></label><div class="grid three measurement-fields"><label class="field"><span data-i18n="value">Valore</span><input class="test-value" inputmode="decimal" required /></label><label class="field"><span data-i18n="unit">Unità</span><input class="test-unit" placeholder="mg/dL" /></label><label class="field"><span data-i18n="range">Intervallo</span><input class="test-range" placeholder="es. 70–99" /></label></div><button type="button" class="remove-measurement danger-link" data-i18n="remove">Rimuovi</button></div></template>
   <datalist id="loincOptions"></datalist>
   <footer class="app-footer"><p data-i18n="medicalDisclaimer">Archivio personale: non fornisce diagnosi né interpretazioni mediche.</p><p>LOINC® is a registered trademark of Regenstrief Institute, Inc.</p></footer>
-  <script type="module" src="./app.js"></script>
-  <script type="module" src="./biometric.js"></script>
+  <script type="module" src="./bootstrap.js"></script>
 </body>
 </html>
