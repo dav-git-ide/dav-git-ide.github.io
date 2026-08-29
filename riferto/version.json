@@ -1,5 +1,5 @@
 {
-  "version": "0.11.0",
-  "releasedAt": "2026-08-29T22:24:00+02:00",
-  "notes": "Corretto il filtro Data su iPhone e introdotta la gestione di più PDF per ogni referto: apertura, aggiunta e rimozione degli allegati direttamente da Modifica, mantenendo compatibilità con i PDF già salvati."
+  "version": "0.11.1",
+  "releasedAt": "2026-08-29T22:31:00+02:00",
+  "notes": "Ritorna Apri PDF nell'elenco referti, la modifica si apre toccando la card, intervallo esami separato in Min/Max e selettori rapidi per unità 10³, 10⁶, 10⁹ e 10¹² per litro."
 }
