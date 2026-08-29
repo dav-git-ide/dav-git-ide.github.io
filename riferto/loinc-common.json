@@ -1,0 +1,16 @@
+[
+  {"code":"718-7","names":{"it":"Emoglobina","en":"Hemoglobin"},"description":{"it":"Concentrazione di emoglobina nel sangue.","en":"Hemoglobin concentration in blood."},"commonUnits":["g/dL","g/L"]},
+  {"code":"789-8","names":{"it":"Eritrociti","en":"Red blood cells"},"description":{"it":"Conta dei globuli rossi.","en":"Red blood cell count."},"commonUnits":["10^6/µL","10^12/L"]},
+  {"code":"6690-2","names":{"it":"Leucociti","en":"White blood cells"},"description":{"it":"Conta dei globuli bianchi.","en":"White blood cell count."},"commonUnits":["10^3/µL","10^9/L"]},
+  {"code":"777-3","names":{"it":"Piastrine","en":"Platelets"},"description":{"it":"Conta delle piastrine.","en":"Platelet count."},"commonUnits":["10^3/µL","10^9/L"]},
+  {"code":"2345-7","names":{"it":"Glucosio","en":"Glucose"},"description":{"it":"Concentrazione di glucosio nel sangue.","en":"Glucose concentration in blood."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"4548-4","names":{"it":"Emoglobina glicata HbA1c","en":"Hemoglobin A1c"},"description":{"it":"Percentuale di emoglobina glicata.","en":"Glycated hemoglobin percentage."},"commonUnits":["%","mmol/mol"]},
+  {"code":"2160-0","names":{"it":"Creatinina","en":"Creatinine"},"description":{"it":"Concentrazione di creatinina nel sangue.","en":"Creatinine concentration in blood."},"commonUnits":["mg/dL","µmol/L"]},
+  {"code":"3094-0","names":{"it":"Urea / Azoto ureico","en":"Urea nitrogen"},"description":{"it":"Azoto ureico nel sangue.","en":"Blood urea nitrogen."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"2093-3","names":{"it":"Colesterolo totale","en":"Total cholesterol"},"description":{"it":"Colesterolo totale nel sangue.","en":"Total cholesterol in blood."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"2085-9","names":{"it":"Colesterolo HDL","en":"HDL cholesterol"},"description":{"it":"Colesterolo HDL.","en":"HDL cholesterol."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"13457-7","names":{"it":"Colesterolo LDL","en":"LDL cholesterol"},"description":{"it":"Colesterolo LDL calcolato.","en":"Calculated LDL cholesterol."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"2571-8","names":{"it":"Trigliceridi","en":"Triglycerides"},"description":{"it":"Trigliceridi nel sangue.","en":"Triglycerides in blood."},"commonUnits":["mg/dL","mmol/L"]},
+  {"code":"3016-3","names":{"it":"TSH","en":"TSH"},"description":{"it":"Ormone tireostimolante.","en":"Thyroid-stimulating hormone."},"commonUnits":["mIU/L","µIU/mL"]},
+  {"code":"1988-5","names":{"it":"Proteina C reattiva","en":"C-reactive protein"},"description":{"it":"Proteina C reattiva (CRP).","en":"C-reactive protein (CRP)."},"commonUnits":["mg/L"]}
+]
