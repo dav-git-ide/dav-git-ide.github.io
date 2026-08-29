@@ -82,7 +82,7 @@ function enhanceMeasurementRow(row){
   summary.addEventListener('click',()=>expandMeasurement(row));
   row.prepend(summary);
   row.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>updateMeasurementSummary(row)));
-  row.querySelector('.test-value')?.addEventListener('blur',()=>setTimeout(()=>collapseMeasurement(row),120));
+  row.addEventListener('focusout',()=>setTimeout(()=>{if(!row.contains(document.activeElement))collapseMeasurement(row)},140));
   row.addEventListener('riferto:loinc-selected',()=>updateMeasurementSummary(row));
   updateMeasurementSummary(row);
   if(row.querySelector('.test-search')?.value?.trim()&&row.querySelector('.test-value')?.value?.trim())row.classList.add('measurement-collapsed');
