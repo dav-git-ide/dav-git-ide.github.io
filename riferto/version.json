@@ -1,5 +1,5 @@
 {
-  "version": "0.10.5",
-  "releasedAt": "2026-08-29T20:00:00+02:00",
-  "notes": "Home referti semplificata e Catalogo LOINC spostato nelle Impostazioni. Aggiornamento sempre manuale."
+  "version": "0.10.6",
+  "releasedAt": "2026-08-29T20:05:00+02:00",
+  "notes": "Backup e ripristino spostati nelle Impostazioni; Catalogo LOINC compresso in sottosezione espandibile; home Referti semplificata."
 }
