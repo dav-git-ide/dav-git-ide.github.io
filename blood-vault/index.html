@@ -12,153 +12,49 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
 
-  <main class="app-shell">
+  <div id="lockScreen" class="lock-screen">
+    <section class="lock-card glass">
+      <div class="lock-mark">◉</div>
+      <p class="eyebrow" data-i18n="encryptedLocalVault">Vault locale cifrato</p>
+      <h1>Blood Vault</h1>
+      <p id="lockIntro" class="muted"></p>
+      <label class="field"><span data-i18n="pin">PIN</span><input id="pinInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
+      <label id="pinConfirmField" class="field"><span data-i18n="confirmPin">Conferma PIN</span><input id="pinConfirmInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
+      <button id="unlockBtn" class="primary-btn"></button>
+      <p id="lockError" class="error-text" role="alert"></p>
+      <p class="caption" data-i18n="pinWarning">Il PIN non viene salvato. Se lo perdi, il vault non può essere recuperato senza un backup e la relativa password.</p>
+    </section>
+  </div>
+
+  <main id="appShell" class="app-shell locked" aria-hidden="true">
     <header class="topbar glass">
-      <div>
-        <p class="eyebrow" data-i18n="privateArchive">Archivio privato locale</p>
-        <h1>Blood Vault</h1>
-      </div>
-      <select id="languageSelect" class="glass-control" aria-label="Language">
-        <option value="it">IT</option>
-        <option value="en">EN</option>
-      </select>
+      <div><p class="eyebrow" data-i18n="privateArchive">Archivio privato locale</p><h1>Blood Vault</h1></div>
+      <div class="top-actions"><button id="lockBtn" class="icon-btn" data-i18n="lock">Blocca</button><select id="languageSelect" class="glass-control" aria-label="Language"><option value="it">IT</option><option value="en">EN</option></select></div>
     </header>
 
     <section class="hero glass">
-      <div>
-        <p class="eyebrow" data-i18n="yourHealthData">I tuoi dati, sul tuo dispositivo</p>
-        <h2 data-i18n="heroTitle">Conserva i referti e struttura i valori degli esami del sangue.</h2>
-        <p class="muted" data-i18n="heroBody">I dati e i PDF restano nel browser del dispositivo. Puoi esportare tutto in JSON per backup o migrazione.</p>
-      </div>
+      <div><p class="eyebrow" data-i18n="yourHealthData">I tuoi dati, sul tuo dispositivo</p><h2 data-i18n="heroTitle">Conserva i referti e struttura i valori degli esami del sangue.</h2><p class="muted" data-i18n="heroBody">Dati e PDF sono cifrati nel vault locale del dispositivo. Puoi esportare un backup JSON cifrato per migrazione.</p></div>
       <button id="newReportBtn" class="primary-btn" data-i18n="newReport">Nuovo referto</button>
     </section>
 
-    <section class="grid two">
-      <article class="glass card stat-card">
-        <span class="stat-label" data-i18n="reports">Referti</span>
-        <strong id="reportCount">0</strong>
-      </article>
-      <article class="glass card stat-card">
-        <span class="stat-label" data-i18n="measurements">Valori</span>
-        <strong id="measurementCount">0</strong>
-      </article>
-    </section>
+    <section class="grid two"><article class="glass card stat-card"><span class="stat-label" data-i18n="reports">Referti</span><strong id="reportCount">0</strong></article><article class="glass card stat-card"><span class="stat-label" data-i18n="measurements">Valori</span><strong id="measurementCount">0</strong></article></section>
 
     <section class="glass card toolbar">
-      <div class="segmented">
-        <button class="segment active" data-view="reports" data-i18n="reports">Referti</button>
-        <button class="segment" data-view="catalog" data-i18n="loincCatalog">Catalogo LOINC</button>
-      </div>
-      <div class="toolbar-actions">
-        <button id="exportBtn" class="secondary-btn" data-i18n="exportJson">Esporta JSON</button>
-        <label class="secondary-btn file-label">
-          <span data-i18n="importJson">Importa JSON</span>
-          <input id="importInput" type="file" accept="application/json,.json" hidden />
-        </label>
-      </div>
+      <div class="segmented"><button class="segment active" data-view="reports" data-i18n="reports">Referti</button><button class="segment" data-view="catalog" data-i18n="loincCatalog">Catalogo LOINC</button></div>
+      <div class="toolbar-actions"><button id="exportBtn" class="secondary-btn" data-i18n="exportJson">Esporta backup cifrato</button><label class="secondary-btn file-label"><span data-i18n="importJson">Importa backup</span><input id="importInput" type="file" accept="application/json,.json" hidden /></label></div>
     </section>
 
-    <section id="reportsView" class="view active">
-      <div id="reportsList" class="stack"></div>
-      <div id="emptyState" class="glass empty-state">
-        <h3 data-i18n="emptyTitle">Nessun referto salvato</h3>
-        <p class="muted" data-i18n="emptyBody">Aggiungi il primo esame e, se vuoi, allega il PDF originale.</p>
-      </div>
-    </section>
-
-    <section id="catalogView" class="view">
-      <article class="glass card">
-        <label class="field">
-          <span data-i18n="searchTest">Cerca esame</span>
-          <input id="catalogSearch" type="search" placeholder="es. emoglobina, glucose, 718-7" />
-        </label>
-        <p class="caption" data-i18n="loincNote">LOINC identifica l'osservazione; l'unità effettiva resta quella riportata dal laboratorio.</p>
-      </article>
-      <div id="catalogList" class="stack"></div>
-    </section>
+    <section id="reportsView" class="view active"><div id="reportsList" class="stack"></div><div id="emptyState" class="glass empty-state"><h3 data-i18n="emptyTitle">Nessun referto salvato</h3><p class="muted" data-i18n="emptyBody">Aggiungi il primo esame e, se vuoi, allega il PDF originale.</p></div></section>
+    <section id="catalogView" class="view"><article class="glass card"><label class="field"><span data-i18n="searchTest">Cerca esame</span><input id="catalogSearch" type="search" placeholder="es. emoglobina, glucose, 718-7" /></label><p class="caption" data-i18n="loincNote">LOINC identifica l'osservazione; l'unità effettiva resta quella riportata dal laboratorio.</p></article><div id="catalogList" class="stack"></div></section>
   </main>
 
-  <dialog id="reportDialog" class="sheet-dialog">
-    <form id="reportForm" method="dialog" class="sheet glass">
-      <div class="sheet-handle"></div>
-      <div class="sheet-head">
-        <div>
-          <p class="eyebrow" data-i18n="report">Referto</p>
-          <h2 id="dialogTitle" data-i18n="newReport">Nuovo referto</h2>
-        </div>
-        <button type="button" id="closeDialogBtn" class="icon-btn" aria-label="Close">✕</button>
-      </div>
+  <dialog id="reportDialog" class="sheet-dialog"><form id="reportForm" method="dialog" class="sheet glass"><div class="sheet-handle"></div><div class="sheet-head"><div><p class="eyebrow" data-i18n="report">Referto</p><h2 id="dialogTitle" data-i18n="newReport">Nuovo referto</h2></div><button type="button" id="closeDialogBtn" class="icon-btn" aria-label="Close">✕</button></div><input id="reportId" type="hidden" /><div class="grid two"><label class="field"><span data-i18n="date">Data</span><input id="reportDate" type="date" required /></label><label class="field"><span data-i18n="laboratory">Laboratorio</span><input id="laboratory" type="text" autocomplete="organization" /></label></div><label class="field"><span data-i18n="notes">Note</span><textarea id="notes" rows="2"></textarea></label><label class="field"><span>PDF</span><input id="pdfInput" type="file" accept="application/pdf" /><small id="pdfStatus" class="caption"></small></label><div class="section-title-row"><h3 data-i18n="measurements">Valori</h3><button type="button" id="addMeasurementBtn" class="secondary-btn" data-i18n="addValue">Aggiungi valore</button></div><div id="measurementEditor" class="stack compact"></div><div class="sheet-actions"><button type="button" id="deleteReportBtn" class="danger-btn hidden" data-i18n="deleteReport">Elimina referto</button><button type="submit" class="primary-btn" data-i18n="save">Salva</button></div></form></dialog>
 
-      <input id="reportId" type="hidden" />
-      <div class="grid two">
-        <label class="field">
-          <span data-i18n="date">Data</span>
-          <input id="reportDate" type="date" required />
-        </label>
-        <label class="field">
-          <span data-i18n="laboratory">Laboratorio</span>
-          <input id="laboratory" type="text" autocomplete="organization" />
-        </label>
-      </div>
-
-      <label class="field">
-        <span data-i18n="notes">Note</span>
-        <textarea id="notes" rows="2"></textarea>
-      </label>
-
-      <label class="field">
-        <span>PDF</span>
-        <input id="pdfInput" type="file" accept="application/pdf" />
-        <small id="pdfStatus" class="caption"></small>
-      </label>
-
-      <div class="section-title-row">
-        <h3 data-i18n="measurements">Valori</h3>
-        <button type="button" id="addMeasurementBtn" class="secondary-btn" data-i18n="addValue">Aggiungi valore</button>
-      </div>
-      <div id="measurementEditor" class="stack compact"></div>
-
-      <div class="sheet-actions">
-        <button type="button" id="deleteReportBtn" class="danger-btn hidden" data-i18n="deleteReport">Elimina referto</button>
-        <button type="submit" class="primary-btn" data-i18n="save">Salva</button>
-      </div>
-    </form>
-  </dialog>
-
-  <template id="measurementTemplate">
-    <div class="measurement-row glass-subtle">
-      <label class="field grow">
-        <span data-i18n="test">Esame</span>
-        <input class="test-search" list="loincOptions" placeholder="Nome o codice LOINC" required />
-      </label>
-      <div class="grid three measurement-fields">
-        <label class="field">
-          <span data-i18n="value">Valore</span>
-          <input class="test-value" inputmode="decimal" required />
-        </label>
-        <label class="field">
-          <span data-i18n="unit">Unità</span>
-          <input class="test-unit" placeholder="mg/dL" />
-        </label>
-        <label class="field">
-          <span data-i18n="range">Intervallo</span>
-          <input class="test-range" placeholder="es. 70–99" />
-        </label>
-      </div>
-      <button type="button" class="remove-measurement danger-link" data-i18n="remove">Rimuovi</button>
-    </div>
-  </template>
-
+  <template id="measurementTemplate"><div class="measurement-row glass-subtle"><label class="field grow"><span data-i18n="test">Esame</span><input class="test-search" list="loincOptions" placeholder="Nome o codice LOINC" required /></label><div class="grid three measurement-fields"><label class="field"><span data-i18n="value">Valore</span><input class="test-value" inputmode="decimal" required /></label><label class="field"><span data-i18n="unit">Unità</span><input class="test-unit" placeholder="mg/dL" /></label><label class="field"><span data-i18n="range">Intervallo</span><input class="test-range" placeholder="es. 70–99" /></label></div><button type="button" class="remove-measurement danger-link" data-i18n="remove">Rimuovi</button></div></template>
   <datalist id="loincOptions"></datalist>
-
-  <footer class="app-footer">
-    <p data-i18n="medicalDisclaimer">Archivio personale: non fornisce diagnosi né interpretazioni mediche.</p>
-    <p>LOINC® is a registered trademark of Regenstrief Institute, Inc.</p>
-  </footer>
-
+  <footer class="app-footer"><p data-i18n="medicalDisclaimer">Archivio personale: non fornisce diagnosi né interpretazioni mediche.</p><p>LOINC® is a registered trademark of Regenstrief Institute, Inc.</p></footer>
   <script type="module" src="./app.js"></script>
 </body>
 </html>
