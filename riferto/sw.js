@@ -1,5 +1,5 @@
-const CACHE='riferto-v0.9.1';
-const STATIC=['./styles.css?v=0.9.1','./pin-guard.js?v=0.9.1','./ui-nav.js?v=0.9.1','./bootstrap.js?v=0.9.1','./app.js?v=0.9.1','./biometric.js?v=0.9.1','./manifest.webmanifest?v=0.9.1','./loinc-common.json'];
+const CACHE='riferto-v0.9.2';
+const STATIC=['./styles.css?v=0.9.2','./pin-guard.js?v=0.9.2','./ui-nav.js?v=0.9.2','./bootstrap.js?v=0.9.2','./app.js?v=0.9.2','./biometric.js?v=0.9.2','./credential-ui.js?v=0.9.2','./manifest.webmanifest?v=0.9.2','./loinc-common.json'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('riferto-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
