@@ -43,7 +43,6 @@ body{touch-action:pan-y}
 .unit-power-btn.active{background:rgba(45,134,255,.12);border-color:rgba(45,134,255,.24);color:#1764e8}
 .report-card{cursor:pointer}
 .report-card .edit-report{display:none!important}
-.report-card .open-pdf-list{display:inline-flex!important}
 @media(max-width:520px){#reportForm>.grid.two{grid-template-columns:1fr;gap:10px}.measurement-compact-summary{grid-template-columns:minmax(0,1fr) auto 16px;gap:7px}.measurement-compact-name{font-size:.86rem}.measurement-compact-value{font-size:.82rem}}
 `;
 document.head.appendChild(reportUiStyle);
@@ -84,10 +83,8 @@ const addMeasurementBtn=document.querySelector('#addMeasurementBtn');addMeasurem
 document.querySelector('#reportForm')?.addEventListener('submit',()=>document.querySelectorAll('#measurementEditor .measurement-row').forEach(syncRange),true);
 
 function enhanceReportCard(card){
-  if(card.dataset.pdfActionEnhanced==='1')return;const edit=card.querySelector('.edit-report');if(!edit)return;card.dataset.pdfActionEnhanced='1';
-  const actions=card.querySelector('.report-actions');const open=document.createElement('button');open.type='button';open.className='text-btn open-pdf-list';open.textContent='Apri PDF';
-  open.addEventListener('click',event=>{event.stopPropagation();edit.click();setTimeout(()=>{const dialog=document.querySelector('#reportDialog');const pdfButtons=[...document.querySelectorAll('#pdfStatus .pdf-open')];if(pdfButtons.length===1){pdfButtons[0].click();dialog?.close()}else if(pdfButtons.length===0){alert('Nessun PDF allegato.')}else document.querySelector('#pdfStatus')?.scrollIntoView({behavior:'smooth',block:'center'})},220)});
-  actions?.appendChild(open);card.addEventListener('click',event=>{if(event.target.closest('button,a,input,label'))return;edit.click()});
+  if(card.dataset.cardTapEnhanced==='1')return;const edit=card.querySelector('.edit-report');if(!edit)return;card.dataset.cardTapEnhanced='1';
+  card.addEventListener('click',event=>{if(event.target.closest('button,a,input,label'))return;edit.click()});
 }
 function enhanceReportCards(){document.querySelectorAll('#reportsList .report-card').forEach(enhanceReportCard)}
 const reportsList=document.querySelector('#reportsList');if(reportsList)new MutationObserver(enhanceReportCards).observe(reportsList,{childList:true});
