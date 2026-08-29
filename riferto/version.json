@@ -1,5 +1,5 @@
 {
-  "version": "0.10.12",
-  "releasedAt": "2026-08-29T22:05:00+02:00",
-  "notes": "Pulsanti Nuovo referto e Cerca 50/50, ricerca referti corretta per non nascondere la lista quando chiusa, cestini rossi separati per cancellare struttura o data."
+  "version": "0.10.13",
+  "releasedAt": "2026-08-29T22:15:00+02:00",
+  "notes": "Corretto il rendering dei referti mantenendo il contatore Valori nel DOM ma nascosto, ricerca rifinita con campi uniformi, lente più piccola e cestini SVG rossi coerenti."
 }
