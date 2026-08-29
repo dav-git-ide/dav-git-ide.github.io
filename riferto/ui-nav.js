@@ -1,5 +1,6 @@
 const lockScreen=document.querySelector('#lockScreen');
 const appShell=document.querySelector('#appShell');
+const bottomNav=document.querySelector('#bottomNav');
 const sectionButtons=[...document.querySelectorAll('[data-app-section]')];
 const sections=[...document.querySelectorAll('.app-section')];
 
@@ -16,10 +17,19 @@ function selectSection(name){
 sectionButtons.forEach(button=>button.addEventListener('click',()=>selectSection(button.dataset.appSection)));
 
 function applyLockState(){
-  const locked=lockScreen && !lockScreen.classList.contains('hidden');
-  document.body.classList.toggle('vault-locked',Boolean(locked));
-  if(locked)appShell?.setAttribute('inert','');
-  else appShell?.removeAttribute('inert');
+  const locked=Boolean(lockScreen && !lockScreen.classList.contains('hidden'));
+  document.body.classList.toggle('vault-locked',locked);
+  if(locked){
+    appShell?.classList.add('hidden');
+    appShell?.setAttribute('aria-hidden','true');
+    appShell?.setAttribute('inert','');
+    bottomNav?.classList.add('hidden');
+  }else{
+    appShell?.classList.remove('hidden');
+    appShell?.setAttribute('aria-hidden','false');
+    appShell?.removeAttribute('inert');
+    bottomNav?.classList.remove('hidden');
+  }
 }
 
 if(lockScreen)new MutationObserver(applyLockState).observe(lockScreen,{attributes:true,attributeFilter:['class']});
