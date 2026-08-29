@@ -35,19 +35,26 @@ style.textContent=`
 .report-filter-trash svg{width:19px;height:19px}
 .report-filter-trash:disabled{opacity:.28}
 .report-filter-empty{padding:26px 20px;text-align:center;border-radius:24px}
+.report-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0 14px;padding:4px;border-radius:16px;background:rgba(130,151,181,.1)}
+.report-mode-switch.hidden{display:none!important}
+.report-mode-btn{border:0;border-radius:12px;padding:9px 12px;background:transparent;color:var(--muted);font-weight:800;font-size:.78rem}
+.report-mode-btn.active{background:rgba(255,255,255,.82);color:var(--text);box-shadow:0 2px 10px rgba(56,75,105,.08)}
+#closeDialogBtn.report-close-btn{width:auto!important;min-width:0!important;height:38px!important;padding:0 10px!important;border-radius:19px!important;display:inline-flex!important;align-items:center;gap:5px;font-weight:800;font-size:.76rem}
+#deleteReportBtn svg{width:16px;height:16px;vertical-align:-3px;margin-right:5px}
+#reportForm .sheet-actions button[type="submit"].hidden{display:none!important}
+#reportForm.report-view-mode input:not(#reportId),#reportForm.report-view-mode textarea{pointer-events:none!important;user-select:text}
+#reportForm.report-view-mode #pdfInput,#reportForm.report-view-mode #pdfInput+small,#reportForm.report-view-mode #addMeasurementBtn,#reportForm.report-view-mode #deleteReportBtn,#reportForm.report-view-mode .pdf-remove,#reportForm.report-view-mode .remove-measurement,#reportForm.report-view-mode .unit-power-tools{display:none!important}
+#reportForm.report-view-mode .measurement-row>.field,#reportForm.report-view-mode .measurement-row>.measurement-fields,#reportForm.report-view-mode .measurement-row>.measurement-range-split,#reportForm.report-view-mode .measurement-row>.remove-measurement{display:none!important}
+#reportForm.report-view-mode .measurement-row>.measurement-compact-summary{display:grid!important}
+#reportForm.report-view-mode .measurement-row{padding:9px 13px;border-radius:18px}
 @media(max-width:620px){.app-shell{height:calc(100dvh - 94px - env(safe-area-inset-bottom))!important;padding-bottom:18px!important}.report-search-card{padding:12px}.report-search-card .field>span{font-size:.68rem}.report-filter-row input,.report-filter-trash{height:44px}}
 `;
 document.head.appendChild(style);
 
 const statsGrid=reportCount?.closest('.grid.two');
 statsGrid?.classList.add('reports-stats-hidden');
-function updateHeroCount(){
-  const count=Number.parseInt(reportCount?.textContent||'0',10)||0;
-  const heading=hero?.querySelector('h2');
-  if(heading)heading.textContent=`I tuoi ${count} ${count===1?'referto':'referti'}. Sul tuo dispositivo.`;
-}
-if(reportCount)new MutationObserver(updateHeroCount).observe(reportCount,{childList:true,characterData:true,subtree:true});
-updateHeroCount();
+function updateHeroCount(){const count=Number.parseInt(reportCount?.textContent||'0',10)||0;const heading=hero?.querySelector('h2');if(heading)heading.textContent=`I tuoi ${count} ${count===1?'referto':'referti'}. Sul tuo dispositivo.`}
+if(reportCount)new MutationObserver(updateHeroCount).observe(reportCount,{childList:true,characterData:true,subtree:true});updateHeroCount();
 
 const newReportBtn=document.querySelector('#newReportBtn');
 let searchToggle=null;
@@ -67,9 +74,28 @@ function setEmptyStateFromCards(){const cards=[...(reportsList?.querySelectorAll
 function resetVisibleCards(){for(const report of [...(reportsList?.querySelectorAll('.report-card')||[])])report.classList.remove('hidden');noResults.classList.add('hidden');syncTrashButtons();setEmptyStateFromCards()}
 function applyFilters(){compactReportCards();syncTrashButtons();const cards=[...(reportsList?.querySelectorAll('.report-card')||[])];setEmptyStateFromCards();if(card.classList.contains('hidden')){resetVisibleCards();return}const q=normalize(textFilter.value),wantedDate=selectedDateLabel();let visible=0;for(const report of cards){const laboratory=normalize(report.querySelector('.report-meta')?.textContent||''),date=normalize(report.querySelector('.report-top h3')?.textContent||'');const show=(!q||laboratory.includes(q))&&(!wantedDate||date===wantedDate);report.classList.toggle('hidden',!show);if(show)visible++}const filtering=Boolean(q||dateFilter.value);noResults.classList.toggle('hidden',!filtering||visible>0||cards.length===0)}
 searchToggle?.addEventListener('click',()=>{const opening=card.classList.contains('hidden');card.classList.toggle('hidden',!opening);searchToggle.setAttribute('aria-expanded',String(opening));if(opening){resetVisibleCards();setTimeout(()=>textFilter.focus(),80)}else resetVisibleCards()});
-textFilter.addEventListener('input',applyFilters);
-dateFilter.addEventListener('change',applyFilters);
-clearText.addEventListener('click',()=>{textFilter.value='';applyFilters();textFilter.focus()});
-clearDate.addEventListener('click',()=>{dateFilter.value='';dateFilter.blur();applyFilters()});
-if(reportsList)new MutationObserver(()=>requestAnimationFrame(()=>{compactReportCards();applyFilters();updateHeroCount()})).observe(reportsList,{childList:true});
-compactReportCards();resetVisibleCards();updateHeroCount();
+textFilter.addEventListener('input',applyFilters);dateFilter.addEventListener('change',applyFilters);clearText.addEventListener('click',()=>{textFilter.value='';applyFilters();textFilter.focus()});clearDate.addEventListener('click',()=>{dateFilter.value='';dateFilter.blur();applyFilters()});
+if(reportsList)new MutationObserver(()=>requestAnimationFrame(()=>{compactReportCards();applyFilters();updateHeroCount()})).observe(reportsList,{childList:true});compactReportCards();resetVisibleCards();updateHeroCount();
+
+const reportDialog=document.querySelector('#reportDialog');
+const reportForm=document.querySelector('#reportForm');
+const closeDialogBtn=document.querySelector('#closeDialogBtn');
+const saveReportBtn=reportForm?.querySelector('button[type="submit"]');
+const deleteReportBtn=document.querySelector('#deleteReportBtn');
+let reportDirty=false;
+let reportMode='edit';
+const modeSwitch=document.createElement('div');
+modeSwitch.className='report-mode-switch hidden';
+modeSwitch.innerHTML='<button type="button" class="report-mode-btn" data-report-mode="view">Visualizza</button><button type="button" class="report-mode-btn" data-report-mode="edit">Modifica</button>';
+reportForm?.querySelector('.sheet-head')?.insertAdjacentElement('afterend',modeSwitch);
+if(closeDialogBtn){closeDialogBtn.classList.add('report-close-btn');closeDialogBtn.innerHTML='<span aria-hidden="true">✕</span><span>Chiudi</span>'}
+if(deleteReportBtn)deleteReportBtn.innerHTML=`${trashIcon}<span>Elimina referto</span>`;
+function refreshSaveVisibility(){if(saveReportBtn)saveReportBtn.classList.toggle('hidden',!reportDirty||reportMode!=='edit')}
+function setReportMode(mode){reportMode=mode;const view=mode==='view';reportForm?.classList.toggle('report-view-mode',view);modeSwitch.querySelectorAll('.report-mode-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.reportMode===mode));refreshSaveVisibility();if(view){document.activeElement?.blur();document.querySelectorAll('#measurementEditor .measurement-row').forEach(row=>row.classList.add('measurement-collapsed'))}}
+function markReportDirty(){if(!reportDialog?.open)return;reportDirty=true;refreshSaveVisibility()}
+modeSwitch.addEventListener('click',event=>{const btn=event.target.closest('[data-report-mode]');if(btn)setReportMode(btn.dataset.reportMode)});
+reportForm?.addEventListener('input',markReportDirty);
+reportForm?.addEventListener('change',markReportDirty);
+reportForm?.addEventListener('click',event=>{if(event.target.closest('.pdf-remove,.remove-measurement,#addMeasurementBtn,.unit-power-btn'))markReportDirty()});
+reportForm?.addEventListener('submit',()=>{reportDirty=false;refreshSaveVisibility()});
+if(reportDialog)new MutationObserver(()=>{if(!reportDialog.open)return;setTimeout(()=>{reportDirty=false;const existing=Boolean(document.querySelector('#reportId')?.value);modeSwitch.classList.toggle('hidden',!existing);setReportMode(existing?'view':'edit');refreshSaveVisibility()},30)}).observe(reportDialog,{attributes:true,attributeFilter:['open']});
