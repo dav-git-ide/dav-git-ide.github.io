@@ -1,5 +1,5 @@
 {
-  "version": "0.10.10",
+  "version": "0.10.11",
   "releasedAt": "2026-08-29T21:55:00+02:00",
-  "notes": "Aggiunta ricerca referti per struttura e data; corretto lo spazio inferiore della lista per evitare sovrapposizioni con la barra di navigazione."
+  "notes": "Schermata Referti semplificata: rimosso il contatore globale dei valori, aggiunti + Nuovo referto e ricerca a scomparsa, card referto compatte con solo contatore esami e area scrollabile separata dalla bottom bar."
 }
