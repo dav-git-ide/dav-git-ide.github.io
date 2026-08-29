@@ -1,5 +1,5 @@
 {
-  "version": "0.11.5",
-  "releasedAt": "2026-08-29T23:08:00+02:00",
-  "notes": "Nuova modalità Visualizza/Modifica nel referto, Chiudi in stile iOS, icona cestino su Elimina referto, Salva visibile solo dopo modifiche reali, contatore referti spostato nel titolo della home e correzione del reset del filtro Data senza riaprire il calendario."
+  "version": "0.11.6",
+  "releasedAt": "2026-08-29T23:16:00+02:00",
+  "notes": "Impostazioni trasformate in sezioni compatte espandibili con icone flat SVG. Rimossi i contatori dalla home Referti, numero dei referti spostato nel titolo, filtro Data cancellabile senza riaprire il calendario e consolidata in un solo modulo la modalità Visualizza/Modifica del referto con Chiudi, Elimina con icona e Salva solo dopo modifiche reali."
 }
