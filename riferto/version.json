@@ -1,5 +1,5 @@
 {
-  "version": "0.10.2",
-  "releasedAt": "2026-08-29T19:52:00+02:00",
-  "notes": "Aggiornamenti verificati, notifica nuova versione all'avvio, aggiornamento dalla home e protezione della disattivazione del backup automatico."
+  "version": "0.10.3",
+  "releasedAt": "2026-08-29T19:56:00+02:00",
+  "notes": "Header non sticky, aggiornamenti rimossi dalla home, badge notifica su Impostazioni e card aggiornamento in cima alle Impostazioni."
 }
