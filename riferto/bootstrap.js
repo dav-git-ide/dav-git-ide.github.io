@@ -1,9 +1,13 @@
-const APP_VERSION='0.10.1';
+const APP_VERSION='0.10.2';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 let deferredInstallPrompt=null;
+let latestKnownVersion=APP_VERSION;
 const $=s=>document.querySelector(s);
+
+function versionParts(v){return String(v||'0').split('.').map(x=>Number.parseInt(x,10)||0)}
+function isNewerVersion(a,b){const A=versionParts(a),B=versionParts(b);for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return x>y}return false}
 
 function setVisibleVersion(){
   document.querySelectorAll('.version-badge').forEach(el=>{
@@ -29,46 +33,98 @@ function showInstallOnly(){
 function openDatabase(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('vault'))db.createObjectStore('vault',{keyPath:'id'});if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function ensureDatabase(){const db=await openDatabase();db.close()}
 
-async function registerServiceWorker(){
+async function registerServiceWorker(version=APP_VERSION){
   if(!('serviceWorker'in navigator))return null;
   try{
-    const reg=await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'});
-    reg.update().catch(()=>{});
+    const reg=await navigator.serviceWorker.register(`./sw.js?v=${encodeURIComponent(version)}&t=${Date.now()}`,{updateViaCache:'none'});
+    await reg.update().catch(()=>{});
     return reg;
   }catch(e){console.warn('SW',e);return null}
 }
 
-async function forceUpdate(){
-  const b=$('#forceUpdateBtn');
-  if(!b)return;
-  const old=b.textContent;
-  b.disabled=true;
-  b.textContent='Aggiornamento…';
+async function fetchPublishedVersion(){
+  const response=await fetch(`./version.json?t=${Date.now()}`,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+  if(!response.ok)throw new Error(`Version check HTTP ${response.status}`);
+  const data=await response.json();
+  if(!data?.version)throw new Error('Versione pubblicata non valida.');
+  latestKnownVersion=String(data.version);
+  return data;
+}
+
+const updateDialog=document.createElement('dialog');
+updateDialog.id='updateAvailableDialog';
+updateDialog.className='sheet-dialog update-dialog';
+updateDialog.innerHTML=`<section class="sheet glass"><div class="sheet-handle"></div><div class="sheet-head"><div><p class="eyebrow">Aggiornamento disponibile</p><h2>Nuova versione di Riferto</h2></div><button id="dismissUpdateDialog" class="icon-btn" type="button" aria-label="Chiudi">✕</button></div><p id="updateDialogText" class="muted"></p><div class="sheet-actions"><button id="updateNowBtn" class="primary-btn" type="button">Aggiorna ora</button></div><p id="updateDialogStatus" class="caption"></p></section>`;
+document.body.appendChild(updateDialog);
+$('#dismissUpdateDialog')?.addEventListener('click',()=>updateDialog.close());
+
+function showUpdateAvailable(version){
+  $('#updateDialogText').textContent=`È disponibile Riferto v${version}. Stai usando v${APP_VERSION}. L'aggiornamento pulirà la cache dell'app e farà un riavvio completo; i dati del vault non vengono cancellati.`;
+  $('#updateDialogStatus').textContent='';
+  if(!updateDialog.open)updateDialog.showModal();
+  const homeBtn=$('#homeUpdateBtn');
+  if(homeBtn){homeBtn.textContent=`Aggiorna a v${version}`;homeBtn.classList.remove('hidden')}
+}
+
+async function checkForUpdates({showIfCurrent=false}={}){
   try{
-    if('serviceWorker'in navigator){
-      const regs=await navigator.serviceWorker.getRegistrations();
-      for(const reg of regs){
-        if(reg.scope.includes('/riferto/')){
-          try{await reg.update()}catch{}
-          await reg.unregister();
-        }
-      }
-    }
-    if('caches'in window){
-      const keys=await caches.keys();
-      await Promise.all(keys.filter(k=>k.startsWith('riferto-')).map(k=>caches.delete(k)));
-    }
-    const u=new URL(location.href);
-    u.searchParams.set('refresh',Date.now().toString());
-    location.replace(u.toString());
-  }catch(e){
-    console.error(e);
-    b.disabled=false;
-    b.textContent='Riprova aggiornamento';
-    setTimeout(()=>{if(b){b.textContent=old;b.disabled=false}},2000);
+    const data=await fetchPublishedVersion();
+    if(isNewerVersion(data.version,APP_VERSION)){showUpdateAvailable(data.version);return data.version}
+    const homeBtn=$('#homeUpdateBtn');
+    if(homeBtn){homeBtn.textContent='Controlla aggiornamenti';homeBtn.classList.remove('hidden')}
+    if(showIfCurrent)alert(`Riferto v${APP_VERSION} è già aggiornato.`);
+    return null;
+  }catch(error){
+    console.warn('Version check failed',error);
+    if(showIfCurrent)alert('Non riesco a verificare la versione pubblicata. Controlla la connessione e riprova.');
+    return null;
   }
 }
-$('#forceUpdateBtn')?.addEventListener('click',forceUpdate);
+
+async function clearRifertoCaches(){
+  if(!('caches'in window))return;
+  const keys=await caches.keys();
+  await Promise.all(keys.filter(k=>k.startsWith('riferto-')).map(k=>caches.delete(k)));
+}
+
+async function hardUpdate(targetVersion=null,button=null){
+  const b=button||$('#forceUpdateBtn')||$('#homeUpdateBtn')||$('#updateNowBtn');
+  const old=b?.textContent||'';
+  if(b){b.disabled=true;b.textContent='Verifica aggiornamento…'}
+  try{
+    const published=await fetchPublishedVersion();
+    const target=targetVersion||published.version;
+    if(target!==published.version)throw new Error('La versione pubblicata è cambiata. Riprova.');
+    if(!isNewerVersion(target,APP_VERSION)){
+      if(b){b.disabled=false;b.textContent=old||'Aggiorna app'}
+      if(updateDialog.open)updateDialog.close();
+      alert(`Riferto v${APP_VERSION} è già aggiornato.`);
+      return;
+    }
+    if(b)b.textContent=`Scarico v${target}…`;
+    await clearRifertoCaches();
+    await registerServiceWorker(target);
+    const verify=await fetch(`./index.html?verify=${encodeURIComponent(target)}&t=${Date.now()}`,{cache:'no-store'});
+    const html=await verify.text();
+    if(!verify.ok||!html.includes(`v${target}`))throw new Error('La nuova shell non è ancora disponibile su GitHub Pages.');
+    if(b)b.textContent='Riavvio…';
+    const u=new URL('./',location.href);
+    u.searchParams.set('release',target);
+    u.searchParams.set('t',Date.now().toString());
+    location.replace(u.toString());
+  }catch(error){
+    console.error(error);
+    $('#updateDialogStatus').textContent=error?.message||'Aggiornamento non riuscito.';
+    if(b){b.disabled=false;b.textContent='Riprova aggiornamento'}
+  }
+}
+
+$('#forceUpdateBtn')?.addEventListener('click',async event=>{const newer=await checkForUpdates();if(newer)hardUpdate(newer,event.currentTarget);else if(latestKnownVersion===APP_VERSION)alert(`Riferto v${APP_VERSION} è già aggiornato.`)});
+$('#homeUpdateBtn')?.addEventListener('click',async event=>{const newer=await checkForUpdates();if(newer)hardUpdate(newer,event.currentTarget);else alert(`Riferto v${APP_VERSION} è già aggiornato.`)});
+$('#updateNowBtn')?.addEventListener('click',event=>hardUpdate(latestKnownVersion,event.currentTarget));
+
+window.RifertoCheckForUpdates=checkForUpdates;
+window.RifertoHardUpdate=hardUpdate;
 
 (async()=>{
   await registerServiceWorker();
@@ -85,6 +141,7 @@ $('#forceUpdateBtn')?.addEventListener('click',forceUpdate);
     await import(`./app.js?v=${APP_VERSION}`);
     await import(`./biometric.js?v=${APP_VERSION}`);
     await import(`./storage-backup.js?v=${APP_VERSION}`);
+    setTimeout(()=>checkForUpdates(),500);
   }catch(e){
     console.error(e);
     $('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';
