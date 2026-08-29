@@ -1,5 +1,5 @@
 {
-  "version": "0.11.1",
-  "releasedAt": "2026-08-29T22:31:00+02:00",
-  "notes": "Ritorna Apri PDF nell'elenco referti, la modifica si apre toccando la card, intervallo esami separato in Min/Max e selettori rapidi per unità 10³, 10⁶, 10⁹ e 10¹² per litro."
+  "version": "0.11.3",
+  "releasedAt": "2026-08-29T22:42:00+02:00",
+  "notes": "Sblocco automatico alla sesta cifra del PIN, Apri PDF mostrato solo quando esistono allegati, righe esame aperte finché non sono complete, range Min/Max visibile nelle righe compatte, asterisco sui valori fuori range e unità rapide %, pg, g/L, fL, 10³/L, 10⁶/L, 10⁹/L e 10¹²/L."
 }
