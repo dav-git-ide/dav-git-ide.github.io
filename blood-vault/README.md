@@ -12,8 +12,49 @@ Important consequences:
 
 - Clearing browser/site data can delete the vault.
 - Removing the installed PWA may also remove local storage depending on the operating system/browser.
-- Use **Export JSON** to create a portable backup before clearing browser data or changing device.
-- The JSON export contains the reports plus PDF files encoded as data URLs, so the backup itself must be treated as sensitive health data.
+- Use **Export encrypted backup** before clearing browser data or changing device.
+- The exported JSON backup is encrypted but must still be treated as sensitive health data.
+
+## Encryption model
+
+Version 2 introduces application-level encryption with the browser Web Crypto API.
+
+- The vault has a random 256-bit AES key generated on-device.
+- Reports are encrypted with AES-GCM before being stored in IndexedDB.
+- PDF bytes are encrypted with AES-GCM before being stored in IndexedDB.
+- AES-GCM also authenticates ciphertext, so corrupted or modified encrypted records fail to decrypt.
+- The user's PIN is not stored.
+- The PIN is processed with PBKDF2-HMAC-SHA-256 using a random salt and 310,000 iterations.
+- The PBKDF2-derived key encrypts the random vault key. This separation makes later PIN changes possible without re-encrypting every medical record.
+- The decrypted vault key exists only in JavaScript memory while the vault is unlocked and is discarded when the user locks the vault or reloads the application.
+
+This protects the IndexedDB contents from straightforward inspection while the vault is locked. It does not claim to defend against a compromised operating system, malicious browser extension with sufficient privileges, injected code, or an attacker who can execute code in the application origin while the vault is unlocked.
+
+## Encrypted portable backups
+
+Backup export creates a JSON envelope containing encrypted payload data.
+
+- The user chooses a backup password at export time.
+- A new random PBKDF2 salt is generated for each export.
+- Backup contents are encrypted with AES-256-GCM.
+- The backup contains structured reports plus PDF bytes.
+- Import requires the backup password.
+
+The backup password is independent of the local vault PIN and is not stored by the app.
+
+## Existing-data migration
+
+When upgrading a previous local Blood Vault installation, the legacy IndexedDB `reports` and `pdfs` stores are read after the user creates the first PIN. Their contents are copied into the encrypted v2 vault stores. The legacy stores are intentionally not automatically deleted in this prototype so migration is non-destructive; a later audited migration can remove them after successful verification.
+
+## Device lock and biometrics
+
+The current implementation provides a local PIN lock. WebAuthn/platform-authenticator support can be added later for Face ID, Touch ID, Android biometrics or device credentials where supported.
+
+A biometric feature is not represented as complete yet. WebAuthn normally involves cryptographic challenge verification and browser/device support varies, so it should be implemented and tested explicitly rather than simulated with a cosmetic biometric prompt.
+
+## Storage persistence
+
+The app requests persistent browser storage with `navigator.storage.persist()` when supported. Browsers may still decline the request. Encrypted backups remain the recommended migration and recovery mechanism.
 
 ## Data model
 
@@ -24,7 +65,7 @@ Each report contains:
 - laboratory name
 - notes
 - zero or more structured measurements
-- optional PDF stored in a separate IndexedDB object store
+- optional PDF stored as a separate encrypted vault entry
 
 Each measurement contains:
 
@@ -56,16 +97,15 @@ The service worker caches only static application assets for offline use. It doe
 
 The translation structure is extensible to additional languages.
 
-## Security roadmap
+## Security next steps
 
-Recommended next steps before using the application for real health records:
-
-1. Encrypt exported backups with a user-controlled passphrase.
-2. Consider application-level encryption for IndexedDB using Web Crypto.
-3. Add an explicit local-vault lock using passcode/biometric capabilities where supported.
-4. Add storage-persistence checks (`navigator.storage.persist()`) and a clear warning when persistent storage is not granted.
-5. Add automatic schema-version migrations and backup validation.
-6. Expand the LOINC catalog only from a license-compliant source and preserve provenance/version metadata.
+1. Add PIN change and recovery-key workflows.
+2. Add automatic lock after inactivity/backgrounding.
+3. Add WebAuthn/platform-authenticator unlock as an optional convenience mechanism.
+4. Add verified deletion of legacy plaintext stores after successful v1-to-v2 migration.
+5. Add backup integrity/version migration tests.
+6. Add a Content Security Policy appropriate for GitHub Pages deployment.
+7. Perform a dedicated security review before treating the PWA as production health-record software.
 
 ## Medical disclaimer
 
