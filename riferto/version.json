@@ -1,5 +1,5 @@
 {
-  "version": "0.10.13",
-  "releasedAt": "2026-08-29T22:15:00+02:00",
-  "notes": "Corretto il rendering dei referti mantenendo il contatore Valori nel DOM ma nascosto, ricerca rifinita con campi uniformi, lente più piccola e cestini SVG rossi coerenti."
+  "version": "0.11.0",
+  "releasedAt": "2026-08-29T22:24:00+02:00",
+  "notes": "Corretto il filtro Data su iPhone e introdotta la gestione di più PDF per ogni referto: apertura, aggiunta e rimozione degli allegati direttamente da Modifica, mantenendo compatibilità con i PDF già salvati."
 }
