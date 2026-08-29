@@ -1,211 +1,47 @@
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
-const AUTO_BACKUP_FORMAT='riferto-device-backup-v1';
+const AUTO_BACKUP_FORMAT='riferto-backup-v2';
 const AUTO_BACKUP_KEY='riferto-auto-backup-enabled';
+const teStorage=new TextEncoder(),tdStorage=new TextDecoder();
 const $=s=>document.querySelector(s);
 
-function openDb(){
-  return new Promise((resolve,reject)=>{
-    const request=indexedDB.open(DB_NAME,DB_VERSION);
-    request.onupgradeneeded=()=>{
-      const db=request.result;
-      if(!db.objectStoreNames.contains('vault'))db.createObjectStore('vault',{keyPath:'id'});
-      if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'});
-    };
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-  });
-}
-
-async function readStore(storeName){
-  const db=await openDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(storeName,'readonly');
-    const request=tx.objectStore(storeName).getAll();
-    request.onsuccess=()=>{db.close();resolve(request.result||[])};
-    request.onerror=()=>{db.close();reject(request.error)};
-  });
-}
-
-async function readMeta(id){
-  const db=await openDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction('meta','readonly');
-    const request=tx.objectStore('meta').get(id);
-    request.onsuccess=()=>{db.close();resolve(request.result||null)};
-    request.onerror=()=>{db.close();reject(request.error)};
-  });
-}
-
-async function buildDeviceBackup(){
-  const [security,vault]=await Promise.all([readMeta('security'),readStore('vault')]);
-  if(!security)throw new Error('Archivio non inizializzato.');
-  return {
-    format:AUTO_BACKUP_FORMAT,
-    version:1,
-    createdAt:new Date().toISOString(),
-    app:'Riferto',
-    security,
-    vault
-  };
-}
-
-function backupFilename(createdAt){
-  return `riferto-auto-backup-${createdAt.replace(/[:.]/g,'-')}.json`;
-}
-
-async function downloadDeviceBackup(source='manual'){
-  const payload=await buildDeviceBackup();
-  const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('a');
-  link.href=url;
-  link.download=backupFilename(payload.createdAt);
-  link.style.display='none';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-  localStorage.setItem('riferto-last-auto-backup',payload.createdAt);
-  updateBackupStatus(source==='auto'?'Backup automatico richiesto al sistema.':'Backup generato.');
-  return payload;
-}
-
-function humanBytes(bytes){
-  if(!Number.isFinite(bytes))return '—';
-  if(bytes<1024)return `${bytes} B`;
-  if(bytes<1024**2)return `${(bytes/1024).toFixed(1)} KB`;
-  if(bytes<1024**3)return `${(bytes/1024**2).toFixed(1)} MB`;
-  return `${(bytes/1024**3).toFixed(1)} GB`;
-}
-
-let storageStatusEl=null;
-let backupStatusEl=null;
-let persistenceButton=null;
-let backupToggle=null;
-
-async function refreshStorageStatus(requestPersistence=false){
-  if(!navigator.storage){
-    if(storageStatusEl)storageStatusEl.textContent='Storage API non disponibile su questo browser.';
-    return;
-  }
-  try{
-    let persistent=await navigator.storage.persisted?.();
-    if(requestPersistence&&!persistent&&navigator.storage.persist){
-      persistent=await navigator.storage.persist();
-    }
-    const estimate=await navigator.storage.estimate?.();
-    const usage=estimate?.usage;
-    const quota=estimate?.quota;
-    if(storageStatusEl){
-      const state=persistent?'Persistente: attivo ✓':'Persistenza non garantita';
-      const space=Number.isFinite(usage)&&Number.isFinite(quota)?` · ${humanBytes(usage)} usati su ${humanBytes(quota)}`:'';
-      storageStatusEl.textContent=state+space;
-    }
-    if(persistenceButton){
-      persistenceButton.textContent=persistent?'Archiviazione persistente attiva':'Richiedi archiviazione persistente';
-      persistenceButton.disabled=Boolean(persistent);
-    }
-  }catch(error){
-    console.warn('Storage persistence check failed',error);
-    if(storageStatusEl)storageStatusEl.textContent='Impossibile verificare la persistenza dello storage.';
-  }
-}
+function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('vault'))db.createObjectStore('vault',{keyPath:'id'});if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function readStore(store){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly'),r=tx.objectStore(store).getAll();r.onsuccess=()=>{db.close();resolve(r.result||[])};r.onerror=()=>{db.close();reject(r.error)}})}
+async function readMeta(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction('meta','readonly'),r=tx.objectStore('meta').get(id);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
+function b64(bytes){const a=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);let s='';for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s)}
+function unb64(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
+async function seal(key,bytes,aad){const iv=crypto.getRandomValues(new Uint8Array(12)),ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:teStorage.encode(aad)},key,bytes);return{iv:b64(iv),ciphertext:b64(ciphertext)}}
+async function openBox(key,box,aad){return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv),additionalData:teStorage.encode(aad)},key,unb64(box.ciphertext))}
+async function derive(secret,salt,iterations=310000){const material=await crypto.subtle.importKey('raw',teStorage.encode(secret),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 
 function autoBackupEnabled(){return localStorage.getItem(AUTO_BACKUP_KEY)!=='false'}
-function setAutoBackupEnabled(value){localStorage.setItem(AUTO_BACKUP_KEY,value?'true':'false')}
+function setAutoBackupEnabled(v){localStorage.setItem(AUTO_BACKUP_KEY,v?'true':'false')}
+function humanBytes(bytes){if(!Number.isFinite(bytes))return '—';if(bytes<1024)return `${bytes} B`;if(bytes<1024**2)return `${(bytes/1024).toFixed(1)} KB`;if(bytes<1024**3)return `${(bytes/1024**2).toFixed(1)} MB`;return `${(bytes/1024**3).toFixed(1)} GB`}
+function jsonSize(value){try{return teStorage.encode(JSON.stringify(value)).byteLength}catch{return 0}}
+function b64Size(s=''){const clean=s.replace(/=+$/,'');return Math.floor(clean.length*3/4)}
 
-function updateBackupStatus(message=''){
-  if(!backupStatusEl)return;
-  const last=localStorage.getItem('riferto-last-auto-backup');
-  const stamp=last?new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date(last)):'mai';
-  backupStatusEl.textContent=`Backup automatico ${autoBackupEnabled()?'attivo':'disattivato'} · ultimo: ${stamp}${message?` · ${message}`:''}`;
-}
+let storageStatusEl=null,backupStatusEl=null,persistenceButton=null,backupToggle=null,usagePanel=null;
 
-function installSettingsCard(){
-  const stack=$('.settings-stack');
-  if(!stack||$('#storageBackupCard'))return;
-  const card=document.createElement('article');
-  card.id='storageBackupCard';
-  card.className='glass settings-card';
-  card.innerHTML=`
-    <div><p class="eyebrow">Protezione dati</p><h3>Storage e backup automatico</h3><p class="muted">Riferto prova a rendere persistente lo storage del dispositivo e, dopo ogni salvataggio di un referto, genera un backup dei dati già cifrati.</p></div>
-    <p id="storagePersistenceStatus" class="caption"></p>
-    <p id="autoBackupStatus" class="caption"></p>
-    <div class="settings-actions">
-      <button id="requestPersistenceBtn" class="secondary-btn" type="button">Verifica archiviazione persistente</button>
-      <button id="downloadDeviceBackupBtn" class="secondary-btn" type="button">Scarica backup adesso</button>
-    </div>
-    <label class="backup-toggle"><input id="autoBackupToggle" type="checkbox" /> <span>Backup automatico dopo ogni salvataggio</span></label>`;
-  const appCard=[...stack.children].find(el=>el.querySelector?.('#forceUpdateBtn'));
-  if(appCard)stack.insertBefore(card,appCard);else stack.prepend(card);
-  storageStatusEl=$('#storagePersistenceStatus');
-  backupStatusEl=$('#autoBackupStatus');
-  persistenceButton=$('#requestPersistenceBtn');
-  backupToggle=$('#autoBackupToggle');
-  backupToggle.checked=autoBackupEnabled();
-  backupToggle.addEventListener('change',()=>{setAutoBackupEnabled(backupToggle.checked);updateBackupStatus()});
-  persistenceButton.addEventListener('click',()=>refreshStorageStatus(true));
-  $('#downloadDeviceBackupBtn')?.addEventListener('click',()=>downloadDeviceBackup('manual').catch(error=>alert(error?.message||'Backup non riuscito.')));
-  updateBackupStatus();
-}
+async function cacheUsage(){if(!('caches'in window))return 0;let total=0;for(const name of await caches.keys()){if(!name.startsWith('riferto-'))continue;const cache=await caches.open(name);for(const req of await cache.keys()){const res=await cache.match(req);if(res){try{total+=(await res.clone().blob()).size}catch{}}}}return total}
+async function storageBreakdown(){const [vault,meta,app]=await Promise.all([readStore('vault'),readStore('meta'),cacheUsage()]);const database=jsonSize(vault)+jsonSize(meta);let pdf=0;for(const row of vault){if(row?.kind==='pdf'){pdf+=b64Size(row.box?.ciphertext)+b64Size(row.nameBox?.ciphertext)+b64Size(row.box?.iv)+b64Size(row.nameBox?.iv)}}return{app,database,pdf,total:app+database}}
+async function refreshUsage(){if(!usagePanel)return;try{const x=await storageBreakdown();usagePanel.innerHTML=`<div class="storage-usage-title"><span class="storage-icon" aria-hidden="true">◫</span><strong>Spazio occupato</strong></div><div class="storage-usage-grid"><span>App e cache</span><strong>${humanBytes(x.app)}</strong><span>Database locale</span><strong>${humanBytes(x.database)}</strong><span>PDF cifrati</span><strong>${humanBytes(x.pdf)}</strong><span>Totale stimato</span><strong>${humanBytes(x.total)}</strong></div><p class="caption">Stima calcolata da Riferto; i valori di sistema possono differire leggermente.</p>`}catch{usagePanel.innerHTML='<p class="caption">Impossibile calcolare lo spazio occupato.</p>'}}
 
-async function restoreDeviceBackup(payload){
-  if(!payload||payload.format!==AUTO_BACKUP_FORMAT||!payload.security||!Array.isArray(payload.vault))return false;
-  if(!confirm('Ripristinare questo backup automatico? I dati locali correnti del vault verranno sostituiti. Face ID/Passkey dovranno essere configurati di nuovo.'))return true;
-  const db=await openDb();
-  await new Promise((resolve,reject)=>{
-    const tx=db.transaction(['vault','meta'],'readwrite');
-    const vault=tx.objectStore('vault');
-    const meta=tx.objectStore('meta');
-    vault.clear();
-    for(const row of payload.vault)vault.put(row);
-    meta.put(payload.security);
-    for(const id of ['biometric','webauthn-faceid','webauthn-passkey'])meta.delete(id);
-    tx.oncomplete=()=>{db.close();resolve()};
-    tx.onerror=()=>{db.close();reject(tx.error)};
-    tx.onabort=()=>{db.close();reject(tx.error||new Error('Ripristino annullato'))};
-  });
-  alert('Backup ripristinato. Riferto verrà riavviato e richiederà il PIN del backup.');
-  location.reload();
-  return true;
-}
+async function refreshStorageStatus(requestPersistence=false){if(!navigator.storage){if(storageStatusEl)storageStatusEl.textContent='Storage API non disponibile.';return}try{let persistent=await navigator.storage.persisted?.();if(requestPersistence&&!persistent&&navigator.storage.persist)persistent=await navigator.storage.persist();const estimate=await navigator.storage.estimate?.();const space=Number.isFinite(estimate?.usage)&&Number.isFinite(estimate?.quota)?` · ${humanBytes(estimate.usage)} su ${humanBytes(estimate.quota)}`:'';if(storageStatusEl)storageStatusEl.textContent=(persistent?'Persistente: attivo ✓':'Persistenza non garantita')+space;if(persistenceButton){persistenceButton.textContent=persistent?'Archiviazione persistente attiva':'Richiedi archiviazione persistente';persistenceButton.disabled=Boolean(persistent)}}catch{if(storageStatusEl)storageStatusEl.textContent='Impossibile verificare la persistenza.'}await refreshUsage()}
+function updateBackupStatus(message=''){if(!backupStatusEl)return;const last=localStorage.getItem('riferto-last-auto-backup');const stamp=last?new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date(last)):'mai';backupStatusEl.textContent=`Backup automatico ${autoBackupEnabled()?'attivo':'disattivato'} · ultimo: ${stamp}${message?` · ${message}`:''}`}
 
-function installImportInterceptor(){
-  const input=$('#importInput');
-  if(!input)return;
-  input.addEventListener('change',async event=>{
-    const file=event.target.files?.[0];
-    if(!file)return;
-    try{
-      const text=await file.text();
-      const payload=JSON.parse(text);
-      if(payload?.format!==AUTO_BACKUP_FORMAT)return;
-      event.stopImmediatePropagation();
-      await restoreDeviceBackup(payload);
-    }catch(error){
-      // Not our format: leave the normal encrypted-backup importer to app.js.
-    }
-  },true);
-}
+async function buildEncryptedBackup(){const [security,backupSecurity,vault]=await Promise.all([readMeta('security'),readMeta('backup-security'),readStore('vault')]);if(!security)throw new Error('Archivio non inizializzato.');if(!backupSecurity)throw new Error('Configura prima la password del backup.');const key=window.RifertoBackupSessionKey;if(!key)throw new Error('Sblocca Riferto con PIN/Face ID prima di creare il backup.');const payload={security,backupSecurity,vault};const box=await seal(key,teStorage.encode(JSON.stringify(payload)),'riferto-backup-payload-v2');return{format:AUTO_BACKUP_FORMAT,version:2,createdAt:new Date().toISOString(),app:'Riferto',hint:backupSecurity.hint||'',recovery:{kdf:backupSecurity.kdf,iterations:backupSecurity.iterations,salt:backupSecurity.salt,wrappedByPassword:backupSecurity.wrappedByPassword},box}}
+function backupFilename(ts){return `riferto-backup-${ts.replace(/[:.]/g,'-')}.json`}
+async function downloadBackup(source='manual'){const payload=await buildEncryptedBackup();const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=backupFilename(payload.createdAt);a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);localStorage.setItem('riferto-last-auto-backup',payload.createdAt);updateBackupStatus(source==='auto'?'Backup automatico richiesto al sistema.':'Backup generato.');return payload}
 
-function installAutomaticBackupHook(){
-  const form=$('#reportForm');
-  const dialog=$('#reportDialog');
-  if(!form||!dialog)return;
-  form.addEventListener('submit',()=>{
-    if(!autoBackupEnabled())return;
-    const onClose=()=>{
-      setTimeout(()=>downloadDeviceBackup('auto').catch(error=>{
-        console.warn('Automatic backup download failed',error);
-        updateBackupStatus('download automatico non riuscito; usa “Scarica backup adesso”.');
-      }),150);
-    };
-    dialog.addEventListener('close',onClose,{once:true});
-  });
-}
+function coffeeIcon(){return `<svg class="coffee-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h10v5.2A4.8 4.8 0 0 1 11.2 18H10.8A4.8 4.8 0 0 1 6 13.2V8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 10h1.7a2.3 2.3 0 0 1 0 4.6H16M9 5.5c0-1 1-1.2 1-2.2M13 5.5c0-1 1-1.2 1-2.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`}
+function installSettings(){const stack=$('.settings-stack');if(!stack)return;let card=$('#storageBackupCard');if(!card){card=document.createElement('article');card.id='storageBackupCard';card.className='glass settings-card';card.innerHTML=`<div><p class="eyebrow">Protezione dati</p><h3>Storage e backup automatico</h3><p class="muted">Riferto prova a rendere persistente lo storage e genera un backup cifrato dopo ogni salvataggio.</p></div><p id="storagePersistenceStatus" class="caption"></p><p id="autoBackupStatus" class="caption"></p><div class="settings-actions"><button id="requestPersistenceBtn" class="secondary-btn" type="button">Verifica archiviazione persistente</button><button id="downloadDeviceBackupBtn" class="secondary-btn" type="button">Scarica backup adesso</button></div><div class="settings-actions"><button id="configureBackupPasswordBtn" class="secondary-btn" type="button">Configura password backup</button></div><label class="backup-toggle"><input id="autoBackupToggle" type="checkbox" /> <span>Backup automatico dopo ogni salvataggio</span></label>`;const appCard=[...stack.children].find(el=>el.querySelector?.('#forceUpdateBtn'));if(appCard)stack.insertBefore(card,appCard);else stack.prepend(card)}storageStatusEl=$('#storagePersistenceStatus');backupStatusEl=$('#autoBackupStatus');persistenceButton=$('#requestPersistenceBtn');backupToggle=$('#autoBackupToggle');backupToggle.checked=autoBackupEnabled();backupToggle.onchange=()=>{setAutoBackupEnabled(backupToggle.checked);updateBackupStatus()};persistenceButton.onclick=()=>refreshStorageStatus(true);$('#configureBackupPasswordBtn').onclick=()=>window.RifertoConfigureBackupPassword?.();$('#downloadDeviceBackupBtn').onclick=async()=>{try{if(!(await readMeta('backup-security'))){window.RifertoConfigureBackupPassword?.();return}await downloadBackup('manual')}catch(e){alert(e?.message||'Backup non riuscito.')}};updateBackupStatus();
+  const support=$('.support-card');if(support){const h=support.querySelector('h3');if(h&&!h.querySelector('.coffee-icon'))h.innerHTML=`${coffeeIcon()}<span>Buy me a coffee</span>`;const link=support.querySelector('.support-link');if(link&&!link.querySelector('.coffee-icon'))link.innerHTML=`${coffeeIcon()}<span>Apri PayPal</span>`;usagePanel=document.createElement('div');usagePanel.className='storage-usage-panel';support.appendChild(usagePanel)}
+  const style=document.createElement('style');style.textContent=`.coffee-icon{width:1.25em;height:1.25em;vertical-align:-.2em;margin-right:.35em}.support-card h3,.support-link{display:flex;align-items:center;justify-content:center;gap:.25rem}.storage-usage-panel{margin-top:22px;padding-top:18px;border-top:1px solid rgba(90,107,132,.12);text-align:left}.storage-usage-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}.storage-icon{font-size:1.2rem}.storage-usage-grid{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:.82rem}.storage-usage-grid strong{text-align:right}.backup-toggle{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:.82rem}`;document.head.appendChild(style)}
 
-installSettingsCard();
-installImportInterceptor();
-installAutomaticBackupHook();
-refreshStorageStatus(true);
+const restoreDialog=document.createElement('dialog');restoreDialog.className='sheet-dialog';restoreDialog.innerHTML=`<form id="restoreBackupForm" class="sheet glass"><div class="sheet-handle"></div><div class="sheet-head"><div><p class="eyebrow">Ripristino</p><h2>Apri backup Riferto</h2></div><button id="closeRestoreBackup" type="button" class="icon-btn">✕</button></div><p id="restoreBackupHint" class="muted"></p><label class="field"><span>Password backup</span><input id="restoreBackupPassword" type="password" autocomplete="current-password" /></label><p id="restoreBackupError" class="error-text"></p><div class="sheet-actions"><button class="primary-btn" type="submit">Ripristina backup</button></div></form>`;document.body.appendChild(restoreDialog);let pendingRestore=null;
+async function restoreEnvelope(env,password){const recovery=env.recovery,key=await derive(password,unb64(recovery.salt),recovery.iterations||310000),raw=await openBox(key,recovery.wrappedByPassword,'riferto-backup-master-v1'),backupKey=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']),clear=await openBox(backupKey,env.box,'riferto-backup-payload-v2'),payload=JSON.parse(tdStorage.decode(clear));const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(['vault','meta'],'readwrite'),v=tx.objectStore('vault'),m=tx.objectStore('meta');v.clear();for(const row of payload.vault||[])v.put(row);m.put(payload.security);m.put(payload.backupSecurity);for(const id of ['biometric','webauthn-faceid','webauthn-passkey'])m.delete(id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}});alert('Backup ripristinato. Riferto verrà riavviato; usa il PIN originale del vault.');location.reload()}
+$('#closeRestoreBackup').onclick=()=>restoreDialog.close();$('#restoreBackupForm').onsubmit=async e=>{e.preventDefault();const error=$('#restoreBackupError');error.textContent='';try{await restoreEnvelope(pendingRestore,$('#restoreBackupPassword').value)}catch{error.textContent='Password errata o backup non valido.'}};
+function installImportInterceptor(){const input=$('#importInput');if(!input)return;input.addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;try{const env=JSON.parse(await file.text());if(env?.format!==AUTO_BACKUP_FORMAT)return;event.stopImmediatePropagation();pendingRestore=env;$('#restoreBackupHint').textContent=env.hint?`Promemoria: “${env.hint}”`:'Nessun promemoria disponibile.';$('#restoreBackupPassword').value='';$('#restoreBackupError').textContent='';restoreDialog.showModal()}catch{}},true)}
+function installAutoHook(){const form=$('#reportForm'),dialog=$('#reportDialog');if(!form||!dialog)return;form.addEventListener('submit',()=>{if(!autoBackupEnabled())return;dialog.addEventListener('close',()=>setTimeout(async()=>{try{if(!(await readMeta('backup-security'))){updateBackupStatus('configura la password backup.');return}await downloadBackup('auto');await refreshUsage()}catch(e){console.warn(e);updateBackupStatus('download automatico non riuscito; usa “Scarica backup adesso”.')}},180),{once:true})})}
+
+installSettings();installImportInterceptor();installAutoHook();refreshStorageStatus(true);window.addEventListener('riferto:backup-key-ready',()=>updateBackupStatus());window.addEventListener('focus',refreshUsage);
