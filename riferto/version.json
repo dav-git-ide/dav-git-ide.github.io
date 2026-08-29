@@ -1,5 +1,5 @@
 {
-  "version": "0.11.6",
-  "releasedAt": "2026-08-29T23:16:00+02:00",
-  "notes": "Impostazioni trasformate in sezioni compatte espandibili con icone flat SVG. Rimossi i contatori dalla home Referti, numero dei referti spostato nel titolo, filtro Data cancellabile senza riaprire il calendario e consolidata in un solo modulo la modalità Visualizza/Modifica del referto con Chiudi, Elimina con icona e Salva solo dopo modifiche reali."
+  "version": "0.11.7",
+  "releasedAt": "2026-08-30T00:01:00+02:00",
+  "notes": "Correzione modalità Visualizza: il selettore PDF viene disabilitato davvero, quindi toccando PDF allegati non apre più il caricamento. Il messaggio relativo ad aggiunta/rimozione degli allegati viene mostrato solo in modalità Modifica."
 }
