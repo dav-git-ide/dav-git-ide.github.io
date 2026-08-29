@@ -4,6 +4,16 @@ const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 let deferredInstallPrompt=null;
 const $=s=>document.querySelector(s);
+
+function setVisibleVersion(){
+  document.querySelectorAll('.version-badge').forEach(el=>{
+    el.textContent=el.textContent.trim().startsWith('Versione')?`Versione ${APP_VERSION}`:`v${APP_VERSION}`;
+  });
+  const footerVersion=document.querySelector('.app-footer strong');
+  if(footerVersion)footerVersion.textContent=`Riferto v${APP_VERSION}`;
+}
+setVisibleVersion();
+
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;$('#nativeInstallBtn')?.classList.remove('hidden')});
 $('#nativeInstallBtn')?.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice.catch(()=>null);deferredInstallPrompt=null;$('#nativeInstallBtn')?.classList.add('hidden')});
 function showInstallOnly(){
@@ -22,8 +32,6 @@ $('#forceUpdateBtn')?.addEventListener('click',forceUpdate);
 (async()=>{
   await registerServiceWorker();
   if(!isStandalone){showInstallOnly();return}
-  // A reload/update is a new session. Keep the protected UI completely hidden
-  // until app.js successfully unwraps the vault key via PIN or biometrics.
   $('#installScreen')?.classList.add('hidden');
   $('#appShell')?.classList.add('hidden');
   $('#appShell')?.setAttribute('aria-hidden','true');
