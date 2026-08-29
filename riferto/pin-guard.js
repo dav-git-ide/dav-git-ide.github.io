@@ -5,6 +5,7 @@ const unlockBtn=document.querySelector('#unlockBtn');
 const lockError=document.querySelector('#lockError');
 const lockCard=document.querySelector('.lock-card');
 let activeInput=pinInput;
+let autoUnlockTimer=null;
 
 function isCreateMode(){return pinConfirmField && !pinConfirmField.classList.contains('hidden')}
 function dots(value){return Array.from({length:6},(_,i)=>`<span class="pin-dot${i<value.length?' filled':''}"></span>`).join('')}
@@ -55,6 +56,14 @@ function validatePins(showMessage=false){
   return true;
 }
 
+function scheduleAutoUnlock(){
+  clearTimeout(autoUnlockTimer);
+  if(isCreateMode()||pinInput?.value.length!==6)return;
+  autoUnlockTimer=setTimeout(()=>{
+    if(!isCreateMode()&&pinInput?.value.length===6&&!unlockBtn?.disabled)unlockBtn?.click();
+  },120);
+}
+
 function pressKey(key){
   if(!activeInput)return;
   if(key==='delete')activeInput.value=activeInput.value.slice(0,-1);
@@ -63,6 +72,7 @@ function pressKey(key){
   if(isCreateMode()&&activeInput===pinInput&&pinInput.value.length===6){activeInput=pinConfirmInput}
   syncDisplays();
   if(isCreateMode()&&pinInput.value.length===6&&pinConfirmInput.value.length===6)validatePins(false);
+  else scheduleAutoUnlock();
 }
 
 keypad.addEventListener('click',event=>{
@@ -71,6 +81,7 @@ keypad.addEventListener('click',event=>{
 });
 
 unlockBtn?.addEventListener('click',event=>{
+  clearTimeout(autoUnlockTimer);
   if(isCreateMode()&&!validatePins(true)){
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -80,6 +91,7 @@ unlockBtn?.addEventListener('click',event=>{
 },true);
 
 new MutationObserver(()=>{
+  clearTimeout(autoUnlockTimer);
   if(!isCreateMode())activeInput=pinInput;
   else if(!activeInput)activeInput=pinInput;
   syncDisplays();
