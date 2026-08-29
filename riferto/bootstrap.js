@@ -1,10 +1,12 @@
-const APP_VERSION='0.10.3';
+const APP_VERSION='0.10.4';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 let deferredInstallPrompt=null;
 let latestKnownVersion=APP_VERSION;
 const $=s=>document.querySelector(s);
+
+$('#homeUpdateBtn')?.remove();
 
 function versionParts(v){return String(v||'0').split('.').map(x=>Number.parseInt(x,10)||0)}
 function isNewerVersion(a,b){const A=versionParts(a),B=versionParts(b);for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return x>y}return false}
@@ -27,50 +29,16 @@ async function fetchPublishedVersion(){const response=await fetch(`./version.jso
 function settingsButton(){return document.querySelector('[data-app-section="settings"]')}
 function ensureNavBadge(){const button=settingsButton();if(!button)return null;let badge=button.querySelector('.nav-notification');if(!badge){badge=document.createElement('span');badge.className='nav-notification';badge.textContent='1';badge.setAttribute('aria-label','Aggiornamento disponibile');button.appendChild(badge)}return badge}
 function updateCard(){return $('#settingsUpdateAvailable')}
-function showSettingsUpdate(version){
-  ensureNavBadge()?.classList.remove('hidden');
-  const card=updateCard();
-  if(card){
-    card.classList.remove('hidden');
-    $('#settingsUpdateVersion').textContent=`v${version}`;
-    $('#settingsCurrentVersion').textContent=`v${APP_VERSION}`;
-    $('#settingsUpdateNowBtn').textContent=`Aggiorna a v${version}`;
-  }
-}
+function showSettingsUpdate(version){ensureNavBadge()?.classList.remove('hidden');const card=updateCard();if(card){card.classList.remove('hidden');$('#settingsUpdateVersion').textContent=`v${version}`;$('#settingsCurrentVersion').textContent=`v${APP_VERSION}`;$('#settingsUpdateNowBtn').textContent=`Aggiorna a v${version}`}}
 function clearUpdateUi(){settingsButton()?.querySelector('.nav-notification')?.classList.add('hidden');updateCard()?.classList.add('hidden')}
 
-async function checkForUpdates({showIfCurrent=false}={}){
-  try{
-    const data=await fetchPublishedVersion();
-    if(isNewerVersion(data.version,APP_VERSION)){showSettingsUpdate(data.version);return data.version}
-    clearUpdateUi();
-    if(showIfCurrent)alert(`Riferto v${APP_VERSION} è già aggiornato.`);
-    return null;
-  }catch(error){console.warn('Version check failed',error);if(showIfCurrent)alert('Non riesco a verificare la versione pubblicata. Controlla la connessione e riprova.');return null}
-}
+async function checkForUpdates({showIfCurrent=false}={}){try{const data=await fetchPublishedVersion();if(isNewerVersion(data.version,APP_VERSION)){showSettingsUpdate(data.version);return data.version}clearUpdateUi();if(showIfCurrent)alert(`Riferto v${APP_VERSION} è già aggiornato.`);return null}catch(error){console.warn('Version check failed',error);if(showIfCurrent)alert('Non riesco a verificare la versione pubblicata. Controlla la connessione e riprova.');return null}}
 async function clearRifertoCaches(){if(!('caches'in window))return;const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('riferto-')).map(k=>caches.delete(k)))}
-async function hardUpdate(targetVersion=null,button=null){
-  const b=button||$('#forceUpdateBtn')||$('#settingsUpdateNowBtn');const old=b?.textContent||'';if(b){b.disabled=true;b.textContent='Verifica aggiornamento…'}
-  try{
-    const published=await fetchPublishedVersion();const target=targetVersion||published.version;
-    if(target!==published.version)throw new Error('La versione pubblicata è cambiata. Riprova.');
-    if(!isNewerVersion(target,APP_VERSION)){if(b){b.disabled=false;b.textContent=old||'Controlla aggiornamenti'};clearUpdateUi();alert(`Riferto v${APP_VERSION} è già aggiornato.`);return}
-    if(b)b.textContent=`Scarico v${target}…`;
-    await clearRifertoCaches();await registerServiceWorker(target);
-    const verify=await fetch(`./index.html?verify=${encodeURIComponent(target)}&t=${Date.now()}`,{cache:'no-store'});const html=await verify.text();
-    if(!verify.ok||!html.includes(`v${target}`))throw new Error('La nuova shell non è ancora disponibile su GitHub Pages.');
-    if(b)b.textContent='Riavvio…';const u=new URL('./',location.href);u.searchParams.set('release',target);u.searchParams.set('t',Date.now().toString());location.replace(u.toString());
-  }catch(error){console.error(error);if(b){b.disabled=false;b.textContent='Riprova aggiornamento'};alert(error?.message||'Aggiornamento non riuscito.')}
-}
+async function hardUpdate(targetVersion=null,button=null){const b=button||$('#forceUpdateBtn')||$('#settingsUpdateNowBtn');const old=b?.textContent||'';if(b){b.disabled=true;b.textContent='Verifica aggiornamento…'}try{const published=await fetchPublishedVersion();const target=targetVersion||published.version;if(target!==published.version)throw new Error('La versione pubblicata è cambiata. Riprova.');if(!isNewerVersion(target,APP_VERSION)){if(b){b.disabled=false;b.textContent=old||'Controlla aggiornamenti'};clearUpdateUi();alert(`Riferto v${APP_VERSION} è già aggiornato.`);return}if(b)b.textContent=`Scarico v${target}…`;await clearRifertoCaches();await registerServiceWorker(target);const verify=await fetch(`./index.html?verify=${encodeURIComponent(target)}&t=${Date.now()}`,{cache:'no-store'});const html=await verify.text();if(!verify.ok||!html.includes(`v${target}`))throw new Error('La nuova shell non è ancora disponibile su GitHub Pages.');if(b)b.textContent='Riavvio…';const u=new URL('./',location.href);u.searchParams.set('release',target);u.searchParams.set('t',Date.now().toString());location.replace(u.toString())}catch(error){console.error(error);if(b){b.disabled=false;b.textContent='Riprova aggiornamento'};alert(error?.message||'Aggiornamento non riuscito.')}}
 
 $('#forceUpdateBtn')?.addEventListener('click',async event=>{const newer=await checkForUpdates();if(newer)hardUpdate(newer,event.currentTarget);else if(latestKnownVersion===APP_VERSION)alert(`Riferto v${APP_VERSION} è già aggiornato.`)});
 $('#settingsUpdateNowBtn')?.addEventListener('click',event=>hardUpdate(latestKnownVersion,event.currentTarget));
 settingsButton()?.addEventListener('click',()=>{settingsButton()?.querySelector('.nav-notification')?.classList.add('hidden')});
 window.RifertoCheckForUpdates=checkForUpdates;window.RifertoHardUpdate=hardUpdate;
 
-(async()=>{
-  await registerServiceWorker();
-  if(!isStandalone){showInstallOnly();return}
-  $('#installScreen')?.classList.add('hidden');$('#appShell')?.classList.add('hidden');$('#appShell')?.setAttribute('aria-hidden','true');$('#appShell')?.setAttribute('inert','');$('#bottomNav')?.classList.add('hidden');$('#lockScreen')?.classList.remove('hidden');
-  try{await ensureDatabase();await import(`./setup-security.js?v=${APP_VERSION}`);await import(`./app.js?v=${APP_VERSION}`);await import(`./biometric.js?v=${APP_VERSION}`);await import(`./storage-backup.js?v=${APP_VERSION}`);setTimeout(()=>checkForUpdates(),500)}catch(e){console.error(e);$('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';$('#unlockBtn').textContent='Riprova';$('#unlockBtn').onclick=()=>location.reload();$('#lockError').textContent=e?.message||'Errore di inizializzazione'}
-})();
+(async()=>{await registerServiceWorker();if(!isStandalone){showInstallOnly();return}$('#installScreen')?.classList.add('hidden');$('#appShell')?.classList.add('hidden');$('#appShell')?.setAttribute('aria-hidden','true');$('#appShell')?.setAttribute('inert','');$('#bottomNav')?.classList.add('hidden');$('#lockScreen')?.classList.remove('hidden');try{await ensureDatabase();await import(`./setup-security.js?v=${APP_VERSION}`);await import(`./app.js?v=${APP_VERSION}`);await import(`./biometric.js?v=${APP_VERSION}`);await import(`./storage-backup.js?v=${APP_VERSION}`);setTimeout(()=>checkForUpdates(),500)}catch(e){console.error(e);$('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';$('#unlockBtn').textContent='Riprova';$('#unlockBtn').onclick=()=>location.reload();$('#lockError').textContent=e?.message||'Errore di inizializzazione'}})();
