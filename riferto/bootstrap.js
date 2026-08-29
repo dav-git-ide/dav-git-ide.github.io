@@ -1,4 +1,4 @@
-const APP_VERSION='0.8.0';
+const APP_VERSION='0.8.1';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -8,6 +8,7 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();def
 $('#nativeInstallBtn')?.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice.catch(()=>null);deferredInstallPrompt=null;$('#nativeInstallBtn')?.classList.add('hidden')});
 function showInstallOnly(){
   $('#installScreen')?.classList.remove('hidden');$('#lockScreen')?.classList.add('hidden');$('#appShell')?.classList.add('hidden');
+  $('#bottomNav')?.classList.add('hidden');
   if(/iPhone|iPad|iPod/i.test(navigator.userAgent))$('#iosInstallHelp')?.classList.remove('hidden');else $('#genericInstallHelp')?.classList.remove('hidden');
 }
 function openDatabase(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('vault'))db.createObjectStore('vault',{keyPath:'id'});if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
