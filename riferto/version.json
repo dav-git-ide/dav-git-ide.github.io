@@ -1,5 +1,5 @@
 {
-  "version": "0.10.3",
+  "version": "0.10.4",
   "releasedAt": "2026-08-29T19:56:00+02:00",
-  "notes": "Header non sticky, aggiornamenti rimossi dalla home, badge notifica su Impostazioni e card aggiornamento in cima alle Impostazioni."
+  "notes": "Rimozione definitiva del vecchio pulsante Controlla aggiornamenti dalla home, anche per shell precedenti."
 }
