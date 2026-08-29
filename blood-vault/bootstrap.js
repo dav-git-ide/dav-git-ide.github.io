@@ -1,4 +1,4 @@
-const APP_VERSION='0.6.0';
+const APP_VERSION='0.6.1';
 const DB_NAME='blood-vault-db';
 const DB_VERSION=2;
 const REQUIRED_STORES=['vault','meta'];
@@ -11,6 +11,7 @@ const appShell=document.querySelector('#appShell');
 const nativeInstallBtn=document.querySelector('#nativeInstallBtn');
 const iosInstallHelp=document.querySelector('#iosInstallHelp');
 const genericInstallHelp=document.querySelector('#genericInstallHelp');
+const forceUpdateBtn=document.querySelector('#forceUpdateBtn');
 
 window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault();
@@ -76,6 +77,36 @@ async function registerServiceWorker(){
     registration.update();
   }catch(error){console.warn('Service worker registration failed',error)}
 }
+
+async function forceAppUpdate(){
+  if(!forceUpdateBtn)return;
+  const original=forceUpdateBtn.textContent;
+  forceUpdateBtn.disabled=true;
+  forceUpdateBtn.textContent='Aggiornamento…';
+  try{
+    if('serviceWorker'in navigator){
+      const registration=await navigator.serviceWorker.getRegistration('./');
+      if(registration){
+        try{await registration.update()}catch{}
+        await registration.unregister();
+      }
+    }
+    if('caches'in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(key=>key.startsWith('blood-vault-')).map(key=>caches.delete(key)));
+    }
+    const url=new URL(location.href);
+    url.searchParams.set('refresh',Date.now().toString());
+    location.replace(url.toString());
+  }catch(error){
+    console.error('Forced update failed',error);
+    forceUpdateBtn.disabled=false;
+    forceUpdateBtn.textContent='Riprova aggiornamento';
+    setTimeout(()=>{if(forceUpdateBtn){forceUpdateBtn.textContent=original;forceUpdateBtn.disabled=false}},2500);
+  }
+}
+
+forceUpdateBtn?.addEventListener('click',forceAppUpdate);
 
 (async()=>{
   await registerServiceWorker();
