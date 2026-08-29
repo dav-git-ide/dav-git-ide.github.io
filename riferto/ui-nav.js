@@ -4,6 +4,7 @@ const bottomNav=document.querySelector('#bottomNav');
 const sectionButtons=[...document.querySelectorAll('[data-app-section]')];
 const sections=[...document.querySelectorAll('.app-section')];
 const POWERS=[3,6,9,12];
+const SIMPLE_UNITS=['%','pg','g/L','fL'];
 
 const reportUiStyle=document.createElement('style');
 reportUiStyle.textContent=`
@@ -27,9 +28,12 @@ body{touch-action:pan-y}
 .measurement-row{min-width:0;max-width:100%;overflow:visible}
 .measurement-row>*{min-width:0;max-width:100%}
 .test-search:focus{border-color:rgba(39,111,226,.55)!important;box-shadow:0 0 0 4px rgba(39,111,226,.1)!important}
-.measurement-compact-summary{display:none;width:100%;min-height:52px;border:0;background:transparent;padding:4px 2px;grid-template-columns:minmax(0,1fr) auto 20px;align-items:center;gap:10px;text-align:left;color:var(--text)}
+.measurement-compact-summary{display:none;width:100%;min-height:56px;border:0;background:transparent;padding:4px 2px;grid-template-columns:minmax(0,1fr) auto 20px;align-items:center;gap:10px;text-align:left;color:var(--text)}
+.measurement-compact-main{min-width:0;display:grid;gap:2px}
 .measurement-compact-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.measurement-compact-range{font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .measurement-compact-value{font-weight:800;white-space:nowrap;color:#334866}
+.measurement-outlier{color:#b12424;font-weight:900;margin-left:3px}
 .measurement-compact-chevron{font-size:1.35rem;line-height:1;color:var(--muted)}
 .measurement-row.measurement-collapsed{padding:9px 13px;border-radius:18px}
 .measurement-row.measurement-collapsed>.field,.measurement-row.measurement-collapsed>.measurement-fields,.measurement-row.measurement-collapsed>.remove-measurement,.measurement-row.measurement-collapsed>.measurement-range-split{display:none!important}
@@ -47,48 +51,35 @@ body{touch-action:pan-y}
 `;
 document.head.appendChild(reportUiStyle);
 
-function selectSection(name){
-  sections.forEach(section=>section.classList.toggle('active',section.dataset.section===name));
-  sectionButtons.forEach(button=>{const active=button.dataset.appSection===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});
-  if(appShell)appShell.scrollTo({top:0,behavior:'auto'});
-}
+function selectSection(name){sections.forEach(section=>section.classList.toggle('active',section.dataset.section===name));sectionButtons.forEach(button=>{const active=button.dataset.appSection===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});if(appShell)appShell.scrollTo({top:0,behavior:'auto'})}
 sectionButtons.forEach(button=>button.addEventListener('click',()=>selectSection(button.dataset.appSection)));
 
 function measurementLabel(row){const raw=row.querySelector('.test-search')?.value?.trim()||'Esame';const parts=raw.split(' — ');return parts.length>1?parts.slice(1).join(' — '):raw}
-function updateMeasurementSummary(row){const summary=row.querySelector('.measurement-compact-summary');if(!summary)return;summary.querySelector('.measurement-compact-name').textContent=measurementLabel(row);const value=row.querySelector('.test-value')?.value?.trim()||'—';const unit=row.querySelector('.test-unit')?.value?.trim()||'';summary.querySelector('.measurement-compact-value').textContent=[value,unit].filter(Boolean).join(' ')}
-function collapseMeasurement(row){const search=row.querySelector('.test-search')?.value?.trim();const value=row.querySelector('.test-value')?.value?.trim();if(!search||!value)return;updateMeasurementSummary(row);row.classList.add('measurement-collapsed')}
+function numeric(v){const n=Number(String(v||'').replace(',','.').trim());return Number.isFinite(n)?n:null}
+function isOutOfRange(row){const value=numeric(row.querySelector('.test-value')?.value),min=numeric(row.querySelector('.test-range-min')?.value),max=numeric(row.querySelector('.test-range-max')?.value);if(value===null||min===null||max===null)return false;return value<min||value>max}
+function updateMeasurementSummary(row){const summary=row.querySelector('.measurement-compact-summary');if(!summary)return;summary.querySelector('.measurement-compact-name').textContent=measurementLabel(row);const value=row.querySelector('.test-value')?.value?.trim()||'—';const unit=row.querySelector('.test-unit')?.value?.trim()||'';const min=row.querySelector('.test-range-min')?.value?.trim()||'';const max=row.querySelector('.test-range-max')?.value?.trim()||'';summary.querySelector('.measurement-compact-range').textContent=min&&max?`Range ${min}–${max}`:'Range —';summary.querySelector('.measurement-compact-value').innerHTML=`${value}${unit?` ${unit}`:''}${isOutOfRange(row)?'<span class="measurement-outlier" aria-label="Fuori range">*</span>':''}`}
+function rowComplete(row){return Boolean(row.querySelector('.test-search')?.value?.trim()&&row.querySelector('.test-value')?.value?.trim()&&row.querySelector('.test-unit')?.value?.trim()&&row.querySelector('.test-range-min')?.value?.trim()&&row.querySelector('.test-range-max')?.value?.trim())}
+function collapseMeasurement(row){if(!rowComplete(row))return;updateMeasurementSummary(row);row.classList.add('measurement-collapsed')}
 function expandMeasurement(row,focusSelector='.test-search'){row.classList.remove('measurement-collapsed');requestAnimationFrame(()=>{row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>row.querySelector(focusSelector)?.focus({preventScroll:true}),100)})}
 function parseRange(value){const raw=String(value||'').trim();if(!raw)return['',''];const normalized=raw.replace(/[–—]/g,'-');const m=normalized.match(/^\s*([^\-]+?)\s*-\s*([^\-]+?)\s*$/);return m?[m[1].trim(),m[2].trim()]:[raw,'']}
-function syncRange(row){const hidden=row.querySelector('.test-range');if(!hidden)return;const min=row.querySelector('.test-range-min')?.value.trim()||'';const max=row.querySelector('.test-range-max')?.value.trim()||'';hidden.value=min&&max?`${min}–${max}`:(min||max||'')}
+function syncRange(row){const hidden=row.querySelector('.test-range');if(!hidden)return;const min=row.querySelector('.test-range-min')?.value.trim()||'';const max=row.querySelector('.test-range-max')?.value.trim()||'';hidden.value=min&&max?`${min}–${max}`:(min||max||'');updateMeasurementSummary(row)}
 function superscript(n){return String(n).replace(/0/g,'⁰').replace(/1/g,'¹').replace(/2/g,'²').replace(/3/g,'³').replace(/4/g,'⁴').replace(/5/g,'⁵').replace(/6/g,'⁶').replace(/7/g,'⁷').replace(/8/g,'⁸').replace(/9/g,'⁹')}
 function exponentOf(unit){const u=String(unit||'');for(const n of [12,9,6,3]){const pretty=`10${superscript(n)}`;if(u.includes(pretty)||new RegExp(`10\\s*(?:\\^|\\*)?\\s*${n}`).test(u))return n}return null}
 function replaceExponent(unit,n){const raw=String(unit||'').trim(),pretty=`10${superscript(n)}`;const rx=/10\s*(?:\^|\*)?\s*(?:3|6|9|12)|10[³⁶⁹]|10¹²/;if(rx.test(raw))return raw.replace(rx,pretty);if(/\/L\b/i.test(raw)){const suffix=raw.slice(raw.toLowerCase().indexOf('/l'));return`${pretty}${suffix}`}return`${pretty}/L`}
-function refreshPowerButtons(row){const unit=row.querySelector('.test-unit'),tools=row.querySelector('.unit-power-tools');if(!unit||!tools)return;const exp=exponentOf(unit.value);tools.querySelectorAll('.unit-power-btn').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.power)===exp))}
+function refreshUnitButtons(row){const unit=row.querySelector('.test-unit'),tools=row.querySelector('.unit-power-tools');if(!unit||!tools)return;const exp=exponentOf(unit.value);tools.querySelectorAll('.unit-power-btn').forEach(btn=>{const simple=btn.dataset.unit;const power=btn.dataset.power;btn.classList.toggle('active',simple?unit.value.trim()===simple:Number(power)===exp)})}
 function addSmartFields(row){
   const hidden=row.querySelector('.test-range');
   if(hidden&&!row.querySelector('.measurement-range-split')){const [min,max]=parseRange(hidden.value);const split=document.createElement('div');split.className='measurement-range-split';split.innerHTML=`<label class="field"><span>Min</span><input class="test-range-min" inputmode="decimal" placeholder="Min"></label><label class="field"><span>Max</span><input class="test-range-max" inputmode="decimal" placeholder="Max"></label>`;hidden.closest('.field')?.insertAdjacentElement('afterend',split);split.querySelector('.test-range-min').value=min;split.querySelector('.test-range-max').value=max;split.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>syncRange(row)));syncRange(row)}
   const unit=row.querySelector('.test-unit');
-  if(unit&&!row.querySelector('.unit-power-tools')){const tools=document.createElement('div');tools.className='unit-power-tools';for(const power of POWERS){const btn=document.createElement('button');btn.type='button';btn.className='unit-power-btn';btn.dataset.power=String(power);btn.textContent=`10${superscript(power)}/L`;btn.addEventListener('click',()=>{unit.value=replaceExponent(unit.value,power);unit.dispatchEvent(new Event('input',{bubbles:true}));refreshPowerButtons(row)});tools.appendChild(btn)}unit.closest('.field')?.appendChild(tools);unit.addEventListener('input',()=>refreshPowerButtons(row));unit.addEventListener('change',()=>refreshPowerButtons(row));refreshPowerButtons(row)}
+  if(unit&&!row.querySelector('.unit-power-tools')){const tools=document.createElement('div');tools.className='unit-power-tools';for(const simple of SIMPLE_UNITS){const btn=document.createElement('button');btn.type='button';btn.className='unit-power-btn';btn.dataset.unit=simple;btn.textContent=simple;btn.addEventListener('click',()=>{unit.value=simple;unit.dispatchEvent(new Event('input',{bubbles:true}));refreshUnitButtons(row)});tools.appendChild(btn)}for(const power of POWERS){const btn=document.createElement('button');btn.type='button';btn.className='unit-power-btn';btn.dataset.power=String(power);btn.textContent=`10${superscript(power)}/L`;btn.addEventListener('click',()=>{unit.value=replaceExponent(unit.value,power);unit.dispatchEvent(new Event('input',{bubbles:true}));refreshUnitButtons(row)});tools.appendChild(btn)}unit.closest('.field')?.appendChild(tools);unit.addEventListener('input',()=>refreshUnitButtons(row));unit.addEventListener('change',()=>refreshUnitButtons(row));refreshUnitButtons(row)}
 }
-function enhanceMeasurementRow(row){
-  if(row.dataset.compactEnhanced==='1')return;row.dataset.compactEnhanced='1';
-  const summary=document.createElement('button');summary.type='button';summary.className='measurement-compact-summary';summary.innerHTML='<span class="measurement-compact-name"></span><span class="measurement-compact-value"></span><span class="measurement-compact-chevron">›</span>';summary.setAttribute('aria-label','Modifica valore');summary.addEventListener('click',()=>expandMeasurement(row));row.prepend(summary);
-  addSmartFields(row);row.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>updateMeasurementSummary(row)));row.addEventListener('focusout',()=>setTimeout(()=>{if(!row.contains(document.activeElement))collapseMeasurement(row)},140));row.addEventListener('riferto:loinc-selected',()=>{updateMeasurementSummary(row);setTimeout(()=>refreshPowerButtons(row),0)});updateMeasurementSummary(row);if(row.querySelector('.test-search')?.value?.trim()&&row.querySelector('.test-value')?.value?.trim())row.classList.add('measurement-collapsed')
-}
+function enhanceMeasurementRow(row){if(row.dataset.compactEnhanced==='1')return;row.dataset.compactEnhanced='1';const summary=document.createElement('button');summary.type='button';summary.className='measurement-compact-summary';summary.innerHTML='<span class="measurement-compact-main"><span class="measurement-compact-name"></span><span class="measurement-compact-range"></span></span><span class="measurement-compact-value"></span><span class="measurement-compact-chevron">›</span>';summary.setAttribute('aria-label','Modifica valore');summary.addEventListener('click',()=>expandMeasurement(row));row.prepend(summary);addSmartFields(row);row.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>updateMeasurementSummary(row)));row.addEventListener('focusout',()=>setTimeout(()=>{if(!row.contains(document.activeElement))collapseMeasurement(row)},140));row.addEventListener('riferto:loinc-selected',()=>{updateMeasurementSummary(row);setTimeout(()=>refreshUnitButtons(row),0)});updateMeasurementSummary(row);if(rowComplete(row))row.classList.add('measurement-collapsed')}
 function enhanceMeasurements(){document.querySelectorAll('#measurementEditor .measurement-row').forEach(enhanceMeasurementRow)}
 const measurementEditor=document.querySelector('#measurementEditor');if(measurementEditor)new MutationObserver(enhanceMeasurements).observe(measurementEditor,{childList:true,subtree:true});
-
 const addMeasurementBtn=document.querySelector('#addMeasurementBtn');addMeasurementBtn?.addEventListener('click',()=>{requestAnimationFrame(()=>{const editor=document.querySelector('#measurementEditor');const rows=[...editor.querySelectorAll('.measurement-row')];const newest=rows.at(-1);if(!newest)return;if(editor.firstElementChild!==newest)editor.prepend(newest);enhanceMeasurementRow(newest);newest.classList.remove('measurement-collapsed');const search=newest.querySelector('.test-search');search.placeholder='Cerca esame o codice LOINC';search.setAttribute('autocomplete','off');search.setAttribute('enterkeyhint','search');newest.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{search.focus({preventScroll:true});search.select?.()},120)})});
-
 document.querySelector('#reportForm')?.addEventListener('submit',()=>document.querySelectorAll('#measurementEditor .measurement-row').forEach(syncRange),true);
-
-function enhanceReportCard(card){
-  if(card.dataset.cardTapEnhanced==='1')return;const edit=card.querySelector('.edit-report');if(!edit)return;card.dataset.cardTapEnhanced='1';
-  card.addEventListener('click',event=>{if(event.target.closest('button,a,input,label'))return;edit.click()});
-}
+function enhanceReportCard(card){if(card.dataset.cardTapEnhanced==='1')return;const edit=card.querySelector('.edit-report');if(!edit)return;card.dataset.cardTapEnhanced='1';card.addEventListener('click',event=>{if(event.target.closest('button,a,input,label'))return;edit.click()})}
 function enhanceReportCards(){document.querySelectorAll('#reportsList .report-card').forEach(enhanceReportCard)}
 const reportsList=document.querySelector('#reportsList');if(reportsList)new MutationObserver(enhanceReportCards).observe(reportsList,{childList:true});
-
 function applyLockState(){const locked=Boolean(lockScreen&&!lockScreen.classList.contains('hidden'));document.body.classList.toggle('vault-locked',locked);if(locked){appShell?.classList.add('hidden');appShell?.setAttribute('aria-hidden','true');appShell?.setAttribute('inert','');bottomNav?.classList.add('hidden')}else{appShell?.classList.remove('hidden');appShell?.setAttribute('aria-hidden','false');appShell?.removeAttribute('inert');bottomNav?.classList.remove('hidden')}}
-if(lockScreen)new MutationObserver(applyLockState).observe(lockScreen,{attributes:true,attributeFilter:['class']});
-applyLockState();enhanceMeasurements();enhanceReportCards();selectSection('reports');
+if(lockScreen)new MutationObserver(applyLockState).observe(lockScreen,{attributes:true,attributeFilter:['class']});applyLockState();enhanceMeasurements();enhanceReportCards();selectSection('reports');
