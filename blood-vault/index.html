@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Blood Vault" />
   <title>Blood Vault</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.6.0" />
-  <link rel="stylesheet" href="./styles.css?v=0.6.0" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.6.1" />
+  <link rel="stylesheet" href="./styles.css?v=0.6.1" />
 </head>
 <body>
   <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
@@ -19,24 +19,11 @@
       <div class="lock-mark">◉</div>
       <p class="eyebrow">Blood Vault</p>
       <h1>Installa l'app</h1>
-      <span class="version-badge">Versione 0.6.0</span>
+      <span class="version-badge">Versione 0.6.1</span>
       <p class="muted install-copy">Blood Vault funziona solo come PWA installata sul dispositivo. Dal browser non vengono aperti né inizializzati il vault e i dati sanitari.</p>
-
       <button id="nativeInstallBtn" class="primary-btn hidden" type="button">Installa Blood Vault</button>
-
-      <div id="iosInstallHelp" class="install-help hidden">
-        <strong>Su iPhone / iPad</strong>
-        <p>1. Apri questa pagina in Safari.</p>
-        <p>2. Tocca <strong>Condividi</strong> ⎋.</p>
-        <p>3. Scegli <strong>Aggiungi alla schermata Home</strong>.</p>
-        <p>4. Avvia Blood Vault dall'icona appena creata.</p>
-      </div>
-
-      <div id="genericInstallHelp" class="install-help hidden">
-        <strong>Installa dal menu del browser</strong>
-        <p>Cerca <strong>Installa app</strong> oppure <strong>Aggiungi a schermata Home</strong>, quindi avvia Blood Vault dall'icona installata.</p>
-      </div>
-
+      <div id="iosInstallHelp" class="install-help hidden"><strong>Su iPhone / iPad</strong><p>1. Apri questa pagina in Safari.</p><p>2. Tocca <strong>Condividi</strong> ⎋.</p><p>3. Scegli <strong>Aggiungi alla schermata Home</strong>.</p><p>4. Avvia Blood Vault dall'icona appena creata.</p></div>
+      <div id="genericInstallHelp" class="install-help hidden"><strong>Installa dal menu del browser</strong><p>Cerca <strong>Installa app</strong> oppure <strong>Aggiungi a schermata Home</strong>, quindi avvia Blood Vault dall'icona installata.</p></div>
       <p class="caption install-footnote">Se stai già usando l'icona installata ma vedi questa schermata, rimuovi la vecchia PWA e reinstallala da Safari/Chrome.</p>
     </article>
   </section>
@@ -46,13 +33,14 @@
       <div class="lock-mark">◉</div>
       <p class="eyebrow" data-i18n="encryptedLocalVault">Vault locale cifrato</p>
       <h1>Blood Vault</h1>
-      <span class="version-badge">v0.6.0</span>
+      <span class="version-badge">v0.6.1</span>
       <p id="lockIntro" class="muted">Crea un PIN di almeno 6 cifre per proteggere il vault locale.</p>
       <button id="biometricUnlockBtn" class="secondary-btn hidden" type="button">Sblocca con biometria</button>
       <div class="lock-separator"><span>oppure</span></div>
       <label class="field"><span data-i18n="pin">PIN</span><input id="pinInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
       <label id="pinConfirmField" class="field"><span data-i18n="confirmPin">Conferma PIN</span><input id="pinConfirmInput" type="password" inputmode="numeric" autocomplete="off" minlength="6" maxlength="32" /></label>
       <button id="unlockBtn" class="primary-btn" type="button">Crea vault</button>
+      <button id="forceUpdateBtn" class="secondary-btn" type="button">Aggiorna app</button>
       <p id="lockError" class="error-text" role="alert"></p>
       <p class="caption" data-i18n="pinWarning">Il PIN non viene salvato. Se lo perdi, il vault non può essere recuperato senza un backup e la relativa password.</p>
     </section>
@@ -60,7 +48,7 @@
 
   <main id="appShell" class="app-shell locked hidden" aria-hidden="true">
     <header class="topbar glass">
-      <div><p class="eyebrow" data-i18n="privateArchive">Archivio privato locale</p><h1>Blood Vault <span class="version-badge compact">v0.6.0</span></h1></div>
+      <div><p class="eyebrow" data-i18n="privateArchive">Archivio privato locale</p><h1>Blood Vault <span class="version-badge compact">v0.6.1</span></h1></div>
       <div class="top-actions"><button id="biometricManageBtn" class="icon-btn" type="button">Abilita Face ID / impronta</button><button id="lockBtn" class="icon-btn" data-i18n="lock">Blocca</button><select id="languageSelect" class="glass-control" aria-label="Language"><option value="it">IT</option><option value="en">EN</option></select></div>
     </header>
 
@@ -84,7 +72,7 @@
 
   <template id="measurementTemplate"><div class="measurement-row glass-subtle"><label class="field grow"><span data-i18n="test">Esame</span><input class="test-search" list="loincOptions" placeholder="Nome o codice LOINC" required /></label><div class="grid three measurement-fields"><label class="field"><span data-i18n="value">Valore</span><input class="test-value" inputmode="decimal" required /></label><label class="field"><span data-i18n="unit">Unità</span><input class="test-unit" placeholder="mg/dL" /></label><label class="field"><span data-i18n="range">Intervallo</span><input class="test-range" placeholder="es. 70–99" /></label></div><button type="button" class="remove-measurement danger-link" data-i18n="remove">Rimuovi</button></div></template>
   <datalist id="loincOptions"></datalist>
-  <footer class="app-footer"><p><strong>Blood Vault v0.6.0</strong></p><p data-i18n="medicalDisclaimer">Archivio personale: non fornisce diagnosi né interpretazioni mediche.</p><p>LOINC® is a registered trademark of Regenstrief Institute, Inc.</p></footer>
-  <script type="module" src="./bootstrap.js?v=0.6.0"></script>
+  <footer class="app-footer"><p><strong>Blood Vault v0.6.1</strong></p><p data-i18n="medicalDisclaimer">Archivio personale: non fornisce diagnosi né interpretazioni mediche.</p><p>LOINC® is a registered trademark of Regenstrief Institute, Inc.</p></footer>
+  <script type="module" src="./bootstrap.js?v=0.6.1"></script>
 </body>
 </html>
