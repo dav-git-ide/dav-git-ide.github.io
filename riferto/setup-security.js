@@ -11,6 +11,7 @@ async function setupPutMeta(value){const db=await setupOpenDb();return new Promi
 async function setupDerive(secret,salt,iterations=RIFERTO_ITERATIONS){const material=await crypto.subtle.importKey('raw',teSetup.encode(secret),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function setupSeal(key,raw,aad){const iv=crypto.getRandomValues(new Uint8Array(12)),ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:teSetup.encode(aad)},key,raw);return{iv:setupB64(iv),ciphertext:setupB64(ciphertext)}}
 async function setupOpen(key,box,aad){return crypto.subtle.decrypt({name:'AES-GCM',iv:setupUnb64(box.iv),additionalData:teSetup.encode(aad)},key,setupUnb64(box.ciphertext))}
+async function verifyExistingPin(pin,security){try{const key=await setupDerive(pin,setupUnb64(security.salt),security.iterations||RIFERTO_ITERATIONS);await setupOpen(key,security.wrappedKey,'riferto-key-v1');return true}catch{return false}}
 
 const lockCard=document.querySelector('.lock-card');
 const pinFields=[document.querySelector('#pinInput')?.closest('.field'),document.querySelector('#pinConfirmField')];
@@ -18,7 +19,6 @@ const unlockBtnSetup=document.querySelector('#unlockBtn');
 const separatorSetup=document.querySelector('.lock-separator');
 const biometricSetup=document.querySelector('#biometricUnlockBtn');
 const lockIntroSetup=document.querySelector('#lockIntro');
-const pinKeypadSetup=document.querySelector('.pin-keypad');
 let pendingBackupRaw=null;
 let pendingBackupBase=null;
 let capturedPin='';
@@ -39,10 +39,17 @@ onboarding.innerHTML=`
   <button id="backupSetupContinue" class="primary-btn" type="button">Continua e crea il PIN</button>`;
 lockCard?.insertBefore(onboarding,lockIntroSetup?.nextSibling||lockCard.firstChild);
 
+const setupDialog=document.createElement('dialog');
+setupDialog.id='backupSecurityDialog';
+setupDialog.className='sheet-dialog backup-security-dialog';
+setupDialog.innerHTML=`<form class="sheet glass" method="dialog" id="backupSecurityForm"><div class="sheet-handle"></div><div class="sheet-head"><div><p class="eyebrow">Protezione backup</p><h2>Configura password backup</h2></div><button type="button" id="closeBackupSecurityDialog" class="icon-btn">✕</button></div><p class="muted">Serve per cifrare i backup automatici. Il PIN di Riferto rimane separato.</p><label class="field"><span>Password backup</span><input id="existingBackupPassword" type="password" autocomplete="new-password" minlength="6" /></label><label class="field"><span>Conferma password backup</span><input id="existingBackupConfirm" type="password" autocomplete="new-password" minlength="6" /></label><label class="field"><span>Frase-promemoria</span><input id="existingBackupHint" type="text" maxlength="120" autocomplete="off" /></label><label class="field"><span>PIN Riferto attuale</span><input id="existingBackupPin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" /></label><p class="caption">La frase-promemoria può essere mostrata durante il recupero. Non inserirci la password.</p><p id="existingBackupError" class="error-text"></p><div class="sheet-actions"><button type="submit" class="primary-btn">Salva protezione backup</button></div></form>`;
+document.body.appendChild(setupDialog);
+
 const setupStyle=document.createElement('style');
-setupStyle.textContent=`.backup-password-onboarding{margin-top:16px}.backup-password-onboarding h2{font-size:1.35rem;margin:0 0 8px}.backup-password-onboarding .field{margin:12px 0}.backup-password-onboarding .primary-btn{width:100%;margin-top:8px}.backup-setup-hidden{display:none!important}`;
+setupStyle.textContent=`.backup-password-onboarding{margin-top:16px}.backup-password-onboarding h2{font-size:1.35rem;margin:0 0 8px}.backup-password-onboarding .field{margin:12px 0}.backup-password-onboarding .primary-btn{width:100%;margin-top:8px}.backup-setup-hidden{display:none!important}.backup-security-dialog{z-index:30000}`;
 document.head.appendChild(setupStyle);
 
+function currentPinKeypad(){return document.querySelector('.pin-keypad')}
 function showBackupStep(){
   onboarding.classList.remove('hidden');
   lockIntroSetup?.classList.add('backup-setup-hidden');
@@ -50,7 +57,7 @@ function showBackupStep(){
   unlockBtnSetup?.classList.add('backup-setup-hidden');
   separatorSetup?.classList.add('backup-setup-hidden');
   biometricSetup?.classList.add('backup-setup-hidden');
-  pinKeypadSetup?.classList.add('backup-setup-hidden');
+  currentPinKeypad()?.classList.add('backup-setup-hidden');
 }
 function showPinStep(){
   onboarding.classList.add('hidden');
@@ -58,7 +65,7 @@ function showPinStep(){
   pinFields.forEach(el=>el?.classList.remove('backup-setup-hidden'));
   unlockBtnSetup?.classList.remove('backup-setup-hidden');
   separatorSetup?.classList.remove('backup-setup-hidden');
-  pinKeypadSetup?.classList.remove('backup-setup-hidden');
+  currentPinKeypad()?.classList.remove('backup-setup-hidden');
 }
 
 async function prepareBackupPassword(){
@@ -108,6 +115,36 @@ async function unlockBackupKey(pin){
   }catch{}
 }
 
+async function configureExistingBackup(){
+  const password=document.querySelector('#existingBackupPassword').value;
+  const confirm=document.querySelector('#existingBackupConfirm').value;
+  const hint=document.querySelector('#existingBackupHint').value.trim();
+  const pin=document.querySelector('#existingBackupPin').value.trim();
+  const error=document.querySelector('#existingBackupError');
+  error.textContent='';
+  if(password.length<6){error.textContent='Usa almeno 6 caratteri per la password del backup.';return}
+  if(password!==confirm){error.textContent='Le password del backup non coincidono.';return}
+  if(!hint){error.textContent='Inserisci una frase-promemoria.';return}
+  if(!/^\d{6}$/.test(pin)){error.textContent='Inserisci il PIN Riferto di 6 cifre.';return}
+  const security=await setupMeta('security');
+  if(!security||!(await verifyExistingPin(pin,security))){error.textContent='PIN Riferto errato.';return}
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const raw=crypto.getRandomValues(new Uint8Array(32));
+  const passwordKey=await setupDerive(password,salt);
+  const pinKey=await setupDerive(pin,setupUnb64(security.salt),security.iterations||RIFERTO_ITERATIONS);
+  const value={id:'backup-security',version:1,kdf:'PBKDF2-SHA256',iterations:RIFERTO_ITERATIONS,salt:setupB64(salt),hint,wrappedByPassword:await setupSeal(passwordKey,raw,'riferto-backup-master-v1'),wrappedByPin:await setupSeal(pinKey,raw,'riferto-backup-master-pin-v1')};
+  await setupPutMeta(value);
+  window.RifertoBackupSessionKey=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
+  window.RifertoBackupHint=hint;
+  setupDialog.close();
+  document.querySelector('#backupSecurityForm').reset();
+  window.dispatchEvent(new CustomEvent('riferto:backup-key-ready'));
+}
+
+window.RifertoConfigureBackupPassword=()=>{document.querySelector('#existingBackupError').textContent='';setupDialog.showModal()};
+document.querySelector('#closeBackupSecurityDialog')?.addEventListener('click',()=>setupDialog.close());
+document.querySelector('#backupSecurityForm')?.addEventListener('submit',event=>{event.preventDefault();configureExistingBackup().catch(error=>{document.querySelector('#existingBackupError').textContent=error?.message||'Configurazione non riuscita.'})});
+
 unlockBtnSetup?.addEventListener('click',()=>{
   const securityPromise=setupMeta('security');
   const pin=document.querySelector('#pinInput')?.value||'';
@@ -131,5 +168,5 @@ if(lockScreenSetup)new MutationObserver(async()=>{
 (async()=>{
   const [security,backup]=await Promise.all([setupMeta('security'),setupMeta('backup-security')]);
   firstRun=!security;
-  if(firstRun&&!backup)showBackupStep();
+  if(firstRun&&!backup)setTimeout(showBackupStep,0);
 })();
