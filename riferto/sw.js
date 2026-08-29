@@ -1,5 +1,5 @@
-const CACHE='riferto-v0.10.10';
-const STATIC=['./styles.css?v=0.10.10','./pin-guard.js?v=0.10.10','./ui-nav.js?v=0.10.10','./bootstrap.js?v=0.10.10','./setup-security.js?v=0.10.10','./app.js?v=0.10.10','./biometric.js?v=0.10.10','./credential-ui.js?v=0.10.10','./storage-backup.js?v=0.10.10','./backup-guard.js?v=0.10.10','./loinc-search.js?v=0.10.10','./reports-search.js?v=0.10.10','./manifest.webmanifest?v=0.10.10','./loinc-common.json'];
+const CACHE='riferto-v0.10.11';
+const STATIC=['./styles.css?v=0.10.11','./pin-guard.js?v=0.10.11','./ui-nav.js?v=0.10.11','./bootstrap.js?v=0.10.11','./setup-security.js?v=0.10.11','./app.js?v=0.10.11','./biometric.js?v=0.10.11','./credential-ui.js?v=0.10.11','./storage-backup.js?v=0.10.11','./backup-guard.js?v=0.10.11','./loinc-search.js?v=0.10.11','./reports-search.js?v=0.10.11','./manifest.webmanifest?v=0.10.11','./loinc-common.json'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('riferto-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
