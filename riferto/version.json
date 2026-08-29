@@ -1,5 +1,5 @@
 {
-  "version": "0.10.6",
-  "releasedAt": "2026-08-29T20:05:00+02:00",
-  "notes": "Backup e ripristino spostati nelle Impostazioni; Catalogo LOINC compresso in sottosezione espandibile; home Referti semplificata."
+  "version": "0.10.7",
+  "releasedAt": "2026-08-29T20:30:00+02:00",
+  "notes": "Corretto il layout Data/Struttura nel form referto e reso immediato il focus sulla ricerca LOINC quando si aggiunge un valore."
 }
