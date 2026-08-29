@@ -51,6 +51,18 @@ body{touch-action:pan-y}
 .unit-power-btn.active{background:rgba(45,134,255,.12);border-color:rgba(45,134,255,.24);color:#1764e8}
 .report-card{cursor:pointer}
 .report-card .edit-report{display:none!important}
+.report-mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;margin:2px 0 12px;border-radius:13px;background:rgba(95,116,148,.1)}
+.report-mode-btn{border:0;border-radius:10px;padding:8px 11px;background:transparent;color:var(--muted);font-weight:750;font-size:.78rem}
+.report-mode-btn.active{background:rgba(255,255,255,.86);color:var(--text);box-shadow:0 1px 5px rgba(50,70,100,.08)}
+.close-text-btn{border:0!important;background:transparent!important;padding:8px 2px 8px 10px!important;color:#1677e8!important;font-weight:700!important;display:inline-flex!important;align-items:center;gap:5px;white-space:nowrap}
+.close-text-btn .close-x{font-size:1.05rem;line-height:1}
+#deleteReportBtn{display:inline-flex;align-items:center;gap:7px}
+#deleteReportBtn svg{width:17px;height:17px;flex:none}
+#reportForm.report-view-mode input:not([type=hidden]),#reportForm.report-view-mode textarea{pointer-events:none!important}
+#reportForm.report-view-mode #pdfInput,#reportForm.report-view-mode #addMeasurementBtn,#reportForm.report-view-mode .remove-measurement,#reportForm.report-view-mode .unit-power-tools,#reportForm.report-view-mode .pdf-remove,#reportForm.report-view-mode #deleteReportBtn{display:none!important}
+#reportForm.report-view-mode .measurement-compact-summary{pointer-events:none}
+#reportForm.report-view-mode .measurement-row{opacity:1}
+#reportForm .sheet-actions .save-report-btn.hidden-save{display:none!important}
 @media(max-width:520px){#reportForm>.grid.two{grid-template-columns:1fr;gap:10px}.measurement-compact-summary{grid-template-columns:minmax(0,1fr) auto 16px;gap:7px}.measurement-compact-name{font-size:.86rem}.measurement-compact-value{font-size:.82rem}.pdf-attachment-row{grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.pdf-attachment-name{font-size:.72rem}.pdf-attachment-row .pdf-remove,.pdf-attachment-row .pdf-open{font-size:.72rem;padding:6px!important}}
 `;
 document.head.appendChild(reportUiStyle);
@@ -64,7 +76,7 @@ function isOutOfRange(row){const value=numeric(row.querySelector('.test-value')?
 function updateMeasurementSummary(row){const summary=row.querySelector('.measurement-compact-summary');if(!summary)return;summary.querySelector('.measurement-compact-name').textContent=measurementLabel(row);const value=row.querySelector('.test-value')?.value?.trim()||'—';const unit=row.querySelector('.test-unit')?.value?.trim()||'';const min=row.querySelector('.test-range-min')?.value?.trim()||'';const max=row.querySelector('.test-range-max')?.value?.trim()||'';summary.querySelector('.measurement-compact-range').textContent=min&&max?`Range ${min}–${max}`:'Range —';summary.querySelector('.measurement-compact-value').innerHTML=`${value}${unit?` ${unit}`:''}${isOutOfRange(row)?'<span class="measurement-outlier" aria-label="Fuori range">*</span>':''}`}
 function rowComplete(row){return Boolean(row.querySelector('.test-search')?.value?.trim()&&row.querySelector('.test-value')?.value?.trim()&&row.querySelector('.test-unit')?.value?.trim()&&row.querySelector('.test-range-min')?.value?.trim()&&row.querySelector('.test-range-max')?.value?.trim())}
 function collapseMeasurement(row){if(!rowComplete(row))return;updateMeasurementSummary(row);row.classList.add('measurement-collapsed')}
-function expandMeasurement(row,focusSelector='.test-search'){row.classList.remove('measurement-collapsed');requestAnimationFrame(()=>{row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>row.querySelector(focusSelector)?.focus({preventScroll:true}),100)})}
+function expandMeasurement(row,focusSelector='.test-search'){if(document.querySelector('#reportForm')?.classList.contains('report-view-mode'))return;row.classList.remove('measurement-collapsed');requestAnimationFrame(()=>{row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>row.querySelector(focusSelector)?.focus({preventScroll:true}),100)})}
 function parseRange(value){const raw=String(value||'').trim();if(!raw)return['',''];const normalized=raw.replace(/[–—]/g,'-');const m=normalized.match(/^\s*([^\-]+?)\s*-\s*([^\-]+?)\s*$/);return m?[m[1].trim(),m[2].trim()]:[raw,'']}
 function syncRange(row){const hidden=row.querySelector('.test-range');if(!hidden)return;const min=row.querySelector('.test-range-min')?.value.trim()||'';const max=row.querySelector('.test-range-max')?.value.trim()||'';hidden.value=min&&max?`${min}–${max}`:(min||max||'');updateMeasurementSummary(row)}
 function superscript(n){return String(n).replace(/0/g,'⁰').replace(/1/g,'¹').replace(/2/g,'²').replace(/3/g,'³').replace(/4/g,'⁴').replace(/5/g,'⁵').replace(/6/g,'⁶').replace(/7/g,'⁷').replace(/8/g,'⁸').replace(/9/g,'⁹')}
@@ -88,17 +100,60 @@ const reportsList=document.querySelector('#reportsList');if(reportsList)new Muta
 
 const trashSvg='<svg class="pdf-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const openSvg='<svg class="pdf-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h6l4 4v14H8zM14 3v5h5M11 15l6-6m-4 0h4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function enhancePdfRows(){
-  document.querySelectorAll('#pdfStatus .pdf-attachment-row').forEach(row=>{
-    if(row.dataset.pdfLayoutEnhanced==='1')return;
-    row.dataset.pdfLayoutEnhanced='1';
-    const remove=row.querySelector('.pdf-remove');
-    const open=row.querySelector('.pdf-open');
-    if(remove){remove.innerHTML=`${trashSvg}<span>Elimina</span>`;remove.setAttribute('aria-label','Elimina PDF')}
-    if(open){open.innerHTML=`${openSvg}<span>Apri</span>`;open.setAttribute('aria-label','Apri PDF')}
-  });
-}
+function enhancePdfRows(){document.querySelectorAll('#pdfStatus .pdf-attachment-row').forEach(row=>{if(row.dataset.pdfLayoutEnhanced==='1')return;row.dataset.pdfLayoutEnhanced='1';const remove=row.querySelector('.pdf-remove');const open=row.querySelector('.pdf-open');if(remove){remove.innerHTML=`${trashSvg}<span>Elimina</span>`;remove.setAttribute('aria-label','Elimina PDF')}if(open){open.innerHTML=`${openSvg}<span>Apri</span>`;open.setAttribute('aria-label','Apri PDF')}})}
 const pdfStatus=document.querySelector('#pdfStatus');if(pdfStatus)new MutationObserver(enhancePdfRows).observe(pdfStatus,{childList:true,subtree:true});enhancePdfRows();
+
+const reportDialog=document.querySelector('#reportDialog');
+const reportForm=document.querySelector('#reportForm');
+const closeDialogBtn=document.querySelector('#closeDialogBtn');
+const deleteReportBtn=document.querySelector('#deleteReportBtn');
+const saveReportBtn=reportForm?.querySelector('button[type="submit"]');
+let reportBaseline='';
+let reportMode='edit';
+let trackingReady=false;
+
+if(closeDialogBtn){closeDialogBtn.classList.add('close-text-btn');closeDialogBtn.innerHTML='<span class="close-x">✕</span><span>Chiudi</span>';closeDialogBtn.setAttribute('aria-label','Chiudi')}
+if(deleteReportBtn){deleteReportBtn.innerHTML=`${trashSvg}<span>Elimina referto</span>`}
+if(saveReportBtn)saveReportBtn.classList.add('save-report-btn');
+
+const modeToggle=document.createElement('div');
+modeToggle.className='report-mode-toggle';
+modeToggle.innerHTML='<button type="button" class="report-mode-btn" data-report-mode="view">Visualizza</button><button type="button" class="report-mode-btn" data-report-mode="edit">Modifica</button>';
+reportForm?.querySelector('.sheet-head')?.insertAdjacentElement('afterend',modeToggle);
+
+function serializeReportState(){
+  if(!reportForm)return'';
+  const values=[...reportForm.querySelectorAll('input:not([type="file"]),textarea')].map(el=>`${el.className}|${el.id}|${el.value}`);
+  const pdfs=[...reportForm.querySelectorAll('#pdfStatus .pdf-attachment-row')].map(row=>row.querySelector('.pdf-attachment-name')?.textContent?.trim()||'');
+  return JSON.stringify({values,pdfs});
+}
+function updateSaveVisibility(){if(!saveReportBtn)return;const dirty=trackingReady&&serializeReportState()!==reportBaseline;saveReportBtn.classList.toggle('hidden-save',reportMode!=='edit'||!dirty)}
+function setReportMode(mode){
+  reportMode=mode;
+  const existing=Boolean(document.querySelector('#reportId')?.value);
+  if(!existing)reportMode='edit';
+  reportForm?.classList.toggle('report-view-mode',reportMode==='view');
+  modeToggle.querySelectorAll('.report-mode-btn').forEach(btn=>{const active=btn.dataset.reportMode===reportMode;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));if(!existing&&btn.dataset.reportMode==='view')btn.disabled=true;else btn.disabled=false});
+  if(deleteReportBtn)deleteReportBtn.classList.toggle('hidden',!existing||reportMode==='view');
+  updateSaveVisibility();
+}
+modeToggle.addEventListener('click',event=>{const btn=event.target.closest('[data-report-mode]');if(btn&&!btn.disabled)setReportMode(btn.dataset.reportMode)});
+function initializeReportUi(){
+  trackingReady=false;
+  setTimeout(()=>{
+    enhanceMeasurements();enhancePdfRows();
+    reportBaseline=serializeReportState();
+    trackingReady=true;
+    setReportMode(document.querySelector('#reportId')?.value?'view':'edit');
+    updateSaveVisibility();
+  },220);
+}
+reportForm?.addEventListener('input',()=>requestAnimationFrame(updateSaveVisibility),true);
+reportForm?.addEventListener('change',()=>requestAnimationFrame(updateSaveVisibility),true);
+reportForm?.addEventListener('click',event=>{if(event.target.closest('.remove-measurement,.pdf-remove,#addMeasurementBtn,.unit-power-btn'))setTimeout(updateSaveVisibility,0)},true);
+if(measurementEditor)new MutationObserver(()=>{if(trackingReady)requestAnimationFrame(updateSaveVisibility)}).observe(measurementEditor,{childList:true,subtree:true});
+if(pdfStatus)new MutationObserver(()=>{enhancePdfRows();if(trackingReady)requestAnimationFrame(updateSaveVisibility)}).observe(pdfStatus,{childList:true,subtree:true});
+if(reportDialog)new MutationObserver(()=>{if(reportDialog.open)initializeReportUi();else{trackingReady=false;reportBaseline=''}}).observe(reportDialog,{attributes:true,attributeFilter:['open']});
 
 function applyLockState(){const locked=Boolean(lockScreen&&!lockScreen.classList.contains('hidden'));document.body.classList.toggle('vault-locked',locked);if(locked){appShell?.classList.add('hidden');appShell?.setAttribute('aria-hidden','true');appShell?.setAttribute('inert','');bottomNav?.classList.add('hidden')}else{appShell?.classList.remove('hidden');appShell?.setAttribute('aria-hidden','false');appShell?.removeAttribute('inert');bottomNav?.classList.remove('hidden')}}
 if(lockScreen)new MutationObserver(applyLockState).observe(lockScreen,{attributes:true,attributeFilter:['class']});applyLockState();enhanceMeasurements();enhanceReportCards();selectSection('reports');
