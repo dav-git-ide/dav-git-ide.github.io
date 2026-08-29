@@ -1,4 +1,4 @@
-const APP_VERSION='0.9.2';
+const APP_VERSION='0.9.3';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -83,6 +83,7 @@ $('#forceUpdateBtn')?.addEventListener('click',forceUpdate);
     await ensureDatabase();
     await import(`./app.js?v=${APP_VERSION}`);
     await import(`./biometric.js?v=${APP_VERSION}`);
+    await import(`./storage-backup.js?v=${APP_VERSION}`);
   }catch(e){
     console.error(e);
     $('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';
