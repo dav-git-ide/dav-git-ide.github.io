@@ -1,5 +1,5 @@
 {
-  "version": "0.11.4",
-  "releasedAt": "2026-08-29T22:47:00+02:00",
-  "notes": "Nella vista allegati PDF, Elimina è allineato a sinistra con icona cestino rossa, il nome file resta al centro e Apri è allineato completamente a destra con icona documento/apertura."
+  "version": "0.11.5",
+  "releasedAt": "2026-08-29T23:08:00+02:00",
+  "notes": "Nuova modalità Visualizza/Modifica nel referto, Chiudi in stile iOS, icona cestino su Elimina referto, Salva visibile solo dopo modifiche reali, contatore referti spostato nel titolo della home e correzione del reset del filtro Data senza riaprire il calendario."
 }
