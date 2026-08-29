@@ -1,5 +1,5 @@
 {
-  "version": "0.10.4",
-  "releasedAt": "2026-08-29T19:56:00+02:00",
-  "notes": "Rimozione definitiva del vecchio pulsante Controlla aggiornamenti dalla home, anche per shell precedenti."
+  "version": "0.10.5",
+  "releasedAt": "2026-08-29T20:00:00+02:00",
+  "notes": "Home referti semplificata e Catalogo LOINC spostato nelle Impostazioni. Aggiornamento sempre manuale."
 }
