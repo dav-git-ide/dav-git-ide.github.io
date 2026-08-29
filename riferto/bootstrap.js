@@ -1,4 +1,4 @@
-const APP_VERSION='0.9.3';
+const APP_VERSION='0.10.0';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -81,6 +81,7 @@ $('#forceUpdateBtn')?.addEventListener('click',forceUpdate);
   $('#lockScreen')?.classList.remove('hidden');
   try{
     await ensureDatabase();
+    await import(`./setup-security.js?v=${APP_VERSION}`);
     await import(`./app.js?v=${APP_VERSION}`);
     await import(`./biometric.js?v=${APP_VERSION}`);
     await import(`./storage-backup.js?v=${APP_VERSION}`);
