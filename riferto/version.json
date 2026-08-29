@@ -1,5 +1,5 @@
 {
-  "version": "0.10.9",
-  "releasedAt": "2026-08-29T21:40:00+02:00",
-  "notes": "Valori ordinati con gli ultimi inseriti in cima, righe compatte dopo la compilazione e blocco dello scorrimento orizzontale della WebView/dialog."
+  "version": "0.10.10",
+  "releasedAt": "2026-08-29T21:55:00+02:00",
+  "notes": "Aggiunta ricerca referti per struttura e data; corretto lo spazio inferiore della lista per evitare sovrapposizioni con la barra di navigazione."
 }
