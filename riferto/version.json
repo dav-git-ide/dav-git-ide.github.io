@@ -1,5 +1,5 @@
 {
-  "version": "0.10.11",
-  "releasedAt": "2026-08-29T21:55:00+02:00",
-  "notes": "Schermata Referti semplificata: rimosso il contatore globale dei valori, aggiunti + Nuovo referto e ricerca a scomparsa, card referto compatte con solo contatore esami e area scrollabile separata dalla bottom bar."
+  "version": "0.10.12",
+  "releasedAt": "2026-08-29T22:05:00+02:00",
+  "notes": "Pulsanti Nuovo referto e Cerca 50/50, ricerca referti corretta per non nascondere la lista quando chiusa, cestini rossi separati per cancellare struttura o data."
 }
