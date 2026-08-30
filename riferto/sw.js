@@ -1,5 +1,5 @@
-const CACHE='riferto-v0.12.1';
-const STATIC=['./styles.css?v=0.12.1','./pin-guard.js?v=0.12.1','./ui-nav.js?v=0.12.1','./bootstrap.js?v=0.12.1','./setup-security.js?v=0.12.1','./app.js?v=0.12.1','./biometric.js?v=0.12.1','./credential-ui.js?v=0.12.1','./storage-backup.js?v=0.12.1','./backup-guard.js?v=0.12.1','./loinc-search.js?v=0.12.1','./reports-search.js?v=0.12.1','./report-view-guard.js?v=0.12.1','./trend.js?v=0.12.1','./settings-accordion.js?v=0.12.1','./polish-0121.js?v=0.12.1','./manifest.webmanifest?v=0.12.1','./loinc-common.json'];
+const CACHE='riferto-v0.12.2';
+const STATIC=['./styles.css?v=0.12.2','./pin-guard.js?v=0.12.2','./ui-nav.js?v=0.12.2','./bootstrap.js?v=0.12.2','./setup-security.js?v=0.12.2','./app.js?v=0.12.2','./biometric.js?v=0.12.2','./credential-ui.js?v=0.12.2','./storage-backup.js?v=0.12.2','./backup-guard.js?v=0.12.2','./loinc-search.js?v=0.12.2','./reports-search.js?v=0.12.2','./report-view-guard.js?v=0.12.2','./trend.js?v=0.12.2','./settings-accordion.js?v=0.12.2','./polish-0121.js?v=0.12.2','./report-polish-0122.js?v=0.12.2','./manifest.webmanifest?v=0.12.2','./loinc-common.json'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('riferto-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
