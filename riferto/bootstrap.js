@@ -1,4 +1,4 @@
-const APP_VERSION='0.12.4';
+const APP_VERSION='0.12.5';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -28,7 +28,7 @@ async function installTargetServiceWorker(version){if(!('serviceWorker'in naviga
 async function fetchPublishedVersion(){const response=await fetch(`./version.json?t=${Date.now()}`,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});if(!response.ok)throw new Error(`Version check HTTP ${response.status}`);const data=await response.json();if(!data?.version)throw new Error('Versione pubblicata non valida.');latestKnownVersion=String(data.version);return data}
 
 function settingsButton(){return document.querySelector('[data-app-section="settings"]')}
-function ensureNavBadge(){const button=settingsButton();if(!button)return null;let badge=button.querySelector('.nav-notification');if(!badge){badge=document.createElement('span');badge.className='nav-notification';badge.textContent='1';badge.setAttribute('aria-label','Aggiornamento disponibile');button.appendChild(badge)}return badge}
+function ensureNavBadge(){const button=settingsButton();if(!button)return null;let badge=button.querySelector('.nav-notification');if(!badge){badge=document.createElement('span');badge.className='nav-notification';badge.setAttribute('aria-hidden','true');button.appendChild(badge)}return badge}
 function updateCard(){return $('#settingsUpdateAvailable')}
 function showSettingsUpdate(version){ensureNavBadge()?.classList.remove('hidden');const card=updateCard();if(card){card.classList.remove('hidden');$('#settingsUpdateVersion').textContent=`v${version}`;$('#settingsCurrentVersion').textContent=`v${APP_VERSION}`;$('#settingsUpdateNowBtn').textContent=`Aggiorna a v${version}`}}
 function clearUpdateUi(){settingsButton()?.querySelector('.nav-notification')?.classList.add('hidden');updateCard()?.classList.add('hidden')}
