@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="40" x2="440" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9ED8FF"/>
+      <stop offset=".55" stop-color="#4C9EFF"/>
+      <stop offset="1" stop-color="#1764E8"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="315" y1="280" x2="430" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#71E7CF"/>
+      <stop offset="1" stop-color="#19A58F"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0B2B61" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <circle cx="350" cy="180" r="104" fill="#F8FBFF" stroke="#173E7A" stroke-width="16"/>
+    <path d="M350 122v63l44 38" fill="none" stroke="#173E7A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="350" cy="185" r="12" fill="#173E7A"/>
+    <path d="M103 115c0-22 18-40 40-40h142l69 69v223c0 22-18 40-40 40H143c-22 0-40-18-40-40V115Z" fill="#FFFFFF"/>
+    <path d="M285 75v70h69" fill="#EAF2FF"/>
+    <path d="M151 204h113M151 244h136M151 284h102" stroke="#7FB5FF" stroke-width="14" stroke-linecap="round"/>
+    <path d="M151 339h28v30h-28zM193 322h28v47h-28zM235 298h28v71h-28z" fill="#3A8FFF" rx="5"/>
+    <path d="M340 292c35-20 76-20 111 0v72c0 58-37 96-55 106-19-10-56-48-56-106v-72Z" fill="url(#shield)" stroke="#9BF7E3" stroke-width="9"/>
+    <rect x="369" y="345" width="55" height="50" rx="12" fill="#FFFFFF"/>
+    <path d="M379 346v-13c0-14 8-25 18-25s18 11 18 25v13" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="397" cy="368" r="6" fill="#168D7C"/>
+    <path d="M397 374v10" stroke="#168D7C" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>
