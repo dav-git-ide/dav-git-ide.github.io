@@ -1,5 +1,5 @@
 {
-  "version": "0.12.3",
-  "releasedAt": "2026-08-30T11:16:00+02:00",
-  "notes": "Valori strutturati estesi con codifica UCUM e valore canonico quando la conversione è dimensionalmente sicura; Trend corretto nel rilevamento dei fuori-range e normalizzato tra unità compatibili; backfill runtime per i referti già esistenti senza necessità di risalvarli."
+  "version": "0.12.4",
+  "releasedAt": "2026-08-30T11:56:00+02:00",
+  "notes": "Notifica aggiornamento rifinita: il badge rosso resta persistente fuori da Impostazioni, scompare mentre la sezione Impostazioni è aperta e torna automaticamente uscendo se l'aggiornamento non è stato ancora installato; la voce Aggiornamento disponibile resta visibile e sparisce solo dopo l'update."
 }
