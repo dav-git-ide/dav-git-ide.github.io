@@ -1,5 +1,5 @@
 {
-  "version": "0.12.5",
-  "releasedAt": "2026-08-30T12:21:00+02:00",
-  "notes": "Notifica aggiornamento rivista: il badge nella barra inferiore diventa un semplice pallino rosso persistente, senza numero, resta visibile anche dentro Impostazioni finché esiste un aggiornamento disponibile e scompare solo quando l'app è aggiornata."
+  "version": "0.12.6",
+  "releasedAt": "2026-08-30T14:06:00+02:00",
+  "notes": "Matrice Trend rifinita per iPhone: nomi esame lunghi vanno a capo senza deformare la tabella, sigle come MCHC/MCV restano in evidenza con descrizione sotto, LOINC resta separato e le colonne dei valori mantengono larghezza stabile."
 }
