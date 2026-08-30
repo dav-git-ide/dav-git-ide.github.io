@@ -12,8 +12,8 @@ const icons={
 
 const style=document.createElement('style');
 style.textContent=`
-.settings-stack{gap:10px!important}
-.settings-accordion{padding:0!important;overflow:hidden;border-radius:22px}
+.settings-stack{gap:10px!important;padding-bottom:28px}
+.settings-accordion{padding:0!important;overflow:hidden;border-radius:22px;scroll-margin-top:18px;scroll-margin-bottom:120px}
 .settings-accordion>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:42px minmax(0,1fr) 20px;align-items:center;gap:12px;padding:15px 16px;min-height:70px}
 .settings-accordion>summary::-webkit-details-marker{display:none}
 .settings-flat-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(45,134,255,.09);color:#236fd8}
@@ -44,6 +44,18 @@ function cardMeta(card){
   return{icon:'app',title:heading,subtitle:'Tocca per aprire'};
 }
 
+function focusOpen(details){
+  requestAnimationFrame(()=>setTimeout(()=>details.scrollIntoView({behavior:'smooth',block:'start'}),80));
+}
+function bindAccordion(details){
+  if(details.dataset.accordionBound==='1')return;
+  details.dataset.accordionBound='1';
+  details.addEventListener('toggle',()=>{
+    if(!details.open)return;
+    [...settingsStack.querySelectorAll(':scope > details.settings-accordion[open]')].forEach(other=>{if(other!==details)other.open=false});
+    focusOpen(details);
+  });
+}
 function compactCard(card){
   if(card.dataset.settingsAccordion==='1')return;
   card.dataset.settingsAccordion='1';
@@ -54,16 +66,9 @@ function compactCard(card){
   if(card.classList.contains('hidden'))details.classList.add('hidden');
   const summary=document.createElement('summary');
   summary.innerHTML=`<span class="settings-flat-icon">${icons[meta.icon]}</span><span class="settings-summary-copy"><strong>${meta.title}</strong><small>${meta.subtitle}</small></span><span class="settings-chevron">›</span>`;
-  const body=document.createElement('div');
-  body.className='settings-accordion-body';
-  while(card.firstChild)body.appendChild(card.firstChild);
-  details.append(summary,body);
-  card.replaceWith(details);
+  const body=document.createElement('div');body.className='settings-accordion-body';while(card.firstChild)body.appendChild(card.firstChild);
+  details.append(summary,body);card.replaceWith(details);bindAccordion(details);
 }
-
-function reorder(){
-  const support=settingsStack?.querySelector(':scope > .support-card');
-  if(support&&settingsStack.firstElementChild!==support)settingsStack.prepend(support);
-}
-function compactAll(){[...(settingsStack?.querySelectorAll(':scope > article.settings-card')||[])].forEach(compactCard);reorder()}
+function reorder(){const support=settingsStack?.querySelector(':scope > .support-card');if(support&&settingsStack.firstElementChild!==support)settingsStack.prepend(support)}
+function compactAll(){[...(settingsStack?.querySelectorAll(':scope > article.settings-card')||[])].forEach(compactCard);[...(settingsStack?.querySelectorAll(':scope > details.settings-accordion')||[])].forEach(bindAccordion);reorder()}
 if(settingsStack){compactAll();new MutationObserver(()=>{compactAll();reorder()}).observe(settingsStack,{childList:true})}
