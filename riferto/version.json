@@ -1,5 +1,5 @@
 {
-  "version": "0.11.7",
-  "releasedAt": "2026-08-30T00:01:00+02:00",
-  "notes": "Correzione modalità Visualizza: il selettore PDF viene disabilitato davvero, quindi toccando PDF allegati non apre più il caricamento. Il messaggio relativo ad aggiunta/rimozione degli allegati viene mostrato solo in modalità Modifica."
+  "version": "0.12.0",
+  "releasedAt": "2026-08-30T09:00:00+02:00",
+  "notes": "Nuova sezione Trend centrale con ricerca esame, grafico temporale e vista tabellare mensile o trimestrale; catalogo LOINC ampliato con emocromo, biochimica, funzionalità epatica/renale, vitamine, ferro, elettroliti e urine; nuova icona Referti, Supporta Riferto in cima alle Impostazioni, copyright spostato nelle Impostazioni e notifica aggiornamento persistente fino all'installazione."
 }
