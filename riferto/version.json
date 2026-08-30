@@ -1,5 +1,5 @@
 {
-  "version": "0.13.1",
-  "releasedAt": "2026-08-30T18:34:00+02:00",
-  "notes": "Correzione portrait: Trend e filtri non restano più visibili entrando in Impostazioni; barra persona nascosta nella sezione Impostazioni; card aggiornamento evidenziata in rosso; aggiunto avviso backup locale, changelog nell'app e sul web e documentazione GitHub aggiornata."
+  "version": "0.13.2",
+  "releasedAt": "2026-08-30T19:02:00+02:00",
+  "notes": "Nuovo formato backup .riferto: pacchetto ZIP strutturato con database, persone, impostazioni e PDF; checksum SHA-256 e CRC; cifratura AES-GCM; ripristino fail-safe e atomico che blocca qualsiasi importazione se il backup è corrotto o incompleto; compatibilità mantenuta con i vecchi backup JSON."
 }
