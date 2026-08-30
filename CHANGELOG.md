@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.13.2 — 2026-08-30
+- Nuovo formato di backup `.riferto`.
+- Il contenuto viene organizzato come ZIP con `manifest.json`, database, persone, impostazioni e allegati PDF.
+- Il pacchetto ZIP completo viene cifrato con AES-GCM prima di essere salvato.
+- Ogni elemento del pacchetto è registrato nel manifest con dimensione e checksum SHA-256; lo ZIP usa anche CRC32.
+- Il ripristino verifica completamente il backup prima di modificare il database locale.
+- In caso di password errata, file troncato, ZIP corrotto, elemento mancante o checksum errato il ripristino viene interrotto senza importazione parziale.
+- Il ripristino del database viene eseguito in una singola transazione IndexedDB, così un errore durante la scrittura annulla l'operazione.
+- I vecchi backup JSON rimangono importabili.
+- Il vecchio backup automatico JSON viene disattivato; il nuovo `.riferto` viene esportato manualmente e va conservato fuori dalla PWA.
+
 ## v0.13.1 — 2026-08-30
 - Corretto il bug portrait che lasciava visibile la sezione Trend entrando in Impostazioni.
 - La barra persona viene nascosta quando si apre Impostazioni.
