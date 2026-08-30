@@ -1,4 +1,4 @@
-const APP_VERSION='0.12.1';
+const APP_VERSION='0.12.2';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -23,19 +23,8 @@ function showInstallOnly(){
 function openDatabase(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('vault'))db.createObjectStore('vault',{keyPath:'id'});if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function ensureDatabase(){const db=await openDatabase();db.close()}
 
-async function ensureCurrentServiceWorker(){
-  if(!('serviceWorker'in navigator))return null;
-  const registrations=await navigator.serviceWorker.getRegistrations();
-  const existing=registrations.find(reg=>reg.scope.includes('/riferto/'));
-  if(existing)return existing;
-  try{return await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'})}catch(e){console.warn('SW',e);return null}
-}
-async function installTargetServiceWorker(version){
-  if(!('serviceWorker'in navigator))return null;
-  const reg=await navigator.serviceWorker.register(`./sw.js?v=${encodeURIComponent(version)}&install=${Date.now()}`,{updateViaCache:'none'});
-  await reg.update().catch(()=>{});
-  return reg;
-}
+async function ensureCurrentServiceWorker(){if(!('serviceWorker'in navigator))return null;const registrations=await navigator.serviceWorker.getRegistrations();const existing=registrations.find(reg=>reg.scope.includes('/riferto/'));if(existing)return existing;try{return await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'})}catch(e){console.warn('SW',e);return null}}
+async function installTargetServiceWorker(version){if(!('serviceWorker'in navigator))return null;const reg=await navigator.serviceWorker.register(`./sw.js?v=${encodeURIComponent(version)}&install=${Date.now()}`,{updateViaCache:'none'});await reg.update().catch(()=>{});return reg}
 async function fetchPublishedVersion(){const response=await fetch(`./version.json?t=${Date.now()}`,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});if(!response.ok)throw new Error(`Version check HTTP ${response.status}`);const data=await response.json();if(!data?.version)throw new Error('Versione pubblicata non valida.');latestKnownVersion=String(data.version);return data}
 
 function settingsButton(){return document.querySelector('[data-app-section="settings"]')}
@@ -43,7 +32,6 @@ function ensureNavBadge(){const button=settingsButton();if(!button)return null;l
 function updateCard(){return $('#settingsUpdateAvailable')}
 function showSettingsUpdate(version){ensureNavBadge()?.classList.remove('hidden');const card=updateCard();if(card){card.classList.remove('hidden');$('#settingsUpdateVersion').textContent=`v${version}`;$('#settingsCurrentVersion').textContent=`v${APP_VERSION}`;$('#settingsUpdateNowBtn').textContent=`Aggiorna a v${version}`}}
 function clearUpdateUi(){settingsButton()?.querySelector('.nav-notification')?.classList.add('hidden');updateCard()?.classList.add('hidden')}
-
 async function checkForUpdates({showIfCurrent=false}={}){try{const data=await fetchPublishedVersion();if(isNewerVersion(data.version,APP_VERSION)){showSettingsUpdate(data.version);return data.version}clearUpdateUi();if(showIfCurrent)alert(`Riferto v${APP_VERSION} è già aggiornato.`);return null}catch(error){console.warn('Version check failed',error);if(showIfCurrent)alert('Non riesco a verificare la versione pubblicata. Controlla la connessione e riprova.');return null}}
 async function clearRifertoCaches(){if(!('caches'in window))return;const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('riferto-')).map(k=>caches.delete(k)))}
 async function hardUpdate(targetVersion=null,button=null){const b=button||$('#forceUpdateBtn')||$('#settingsUpdateNowBtn');const old=b?.textContent||'';if(b){b.disabled=true;b.textContent='Verifica aggiornamento…'}try{const published=await fetchPublishedVersion();const target=targetVersion||published.version;if(target!==published.version)throw new Error('La versione pubblicata è cambiata. Riprova.');if(!isNewerVersion(target,APP_VERSION)){if(b){b.disabled=false;b.textContent=old||'Controlla aggiornamenti'};clearUpdateUi();alert(`Riferto v${APP_VERSION} è già aggiornato.`);return}const verify=await fetch(`./index.html?verify=${encodeURIComponent(target)}&t=${Date.now()}`,{cache:'no-store'});const html=await verify.text();if(!verify.ok||!html.includes(`v${target}`))throw new Error('La nuova shell non è ancora disponibile su GitHub Pages.');if(b)b.textContent=`Installo v${target}…`;await clearRifertoCaches();await installTargetServiceWorker(target);if(b)b.textContent='Riavvio…';const u=new URL('./',location.href);u.searchParams.set('release',target);u.searchParams.set('t',Date.now().toString());location.replace(u.toString())}catch(error){console.error(error);if(b){b.disabled=false;b.textContent='Riprova aggiornamento'};alert(error?.message||'Aggiornamento non riuscito.')}}
@@ -52,4 +40,4 @@ $('#forceUpdateBtn')?.addEventListener('click',async event=>{const newer=await c
 $('#settingsUpdateNowBtn')?.addEventListener('click',event=>hardUpdate(latestKnownVersion,event.currentTarget));
 window.RifertoCheckForUpdates=checkForUpdates;window.RifertoHardUpdate=hardUpdate;
 
-(async()=>{await ensureCurrentServiceWorker();if(!isStandalone){showInstallOnly();return}$('#installScreen')?.classList.add('hidden');$('#appShell')?.classList.add('hidden');$('#appShell')?.setAttribute('aria-hidden','true');$('#appShell')?.setAttribute('inert','');$('#bottomNav')?.classList.add('hidden');$('#lockScreen')?.classList.remove('hidden');try{await ensureDatabase();await import(`./setup-security.js?v=${APP_VERSION}`);await import(`./app.js?v=${APP_VERSION}`);await import(`./biometric.js?v=${APP_VERSION}`);await import(`./storage-backup.js?v=${APP_VERSION}`);await import(`./reports-search.js?v=${APP_VERSION}`);await import(`./report-view-guard.js?v=${APP_VERSION}`);await import(`./trend.js?v=${APP_VERSION}`);await import(`./settings-accordion.js?v=${APP_VERSION}`);await import(`./polish-0121.js?v=${APP_VERSION}`);setTimeout(()=>checkForUpdates(),500)}catch(e){console.error(e);$('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';$('#unlockBtn').textContent='Riprova';$('#unlockBtn').onclick=()=>location.reload();$('#lockError').textContent=e?.message||'Errore di inizializzazione'}})();
+(async()=>{await ensureCurrentServiceWorker();if(!isStandalone){showInstallOnly();return}$('#installScreen')?.classList.add('hidden');$('#appShell')?.classList.add('hidden');$('#appShell')?.setAttribute('aria-hidden','true');$('#appShell')?.setAttribute('inert','');$('#bottomNav')?.classList.add('hidden');$('#lockScreen')?.classList.remove('hidden');try{await ensureDatabase();await import(`./setup-security.js?v=${APP_VERSION}`);await import(`./app.js?v=${APP_VERSION}`);await import(`./biometric.js?v=${APP_VERSION}`);await import(`./storage-backup.js?v=${APP_VERSION}`);await import(`./reports-search.js?v=${APP_VERSION}`);await import(`./report-view-guard.js?v=${APP_VERSION}`);await import(`./trend.js?v=${APP_VERSION}`);await import(`./settings-accordion.js?v=${APP_VERSION}`);await import(`./polish-0121.js?v=${APP_VERSION}`);await import(`./report-polish-0122.js?v=${APP_VERSION}`);setTimeout(()=>checkForUpdates(),500)}catch(e){console.error(e);$('#lockIntro').textContent='Errore di inizializzazione locale. Chiudi e riapri Riferto.';$('#unlockBtn').textContent='Riprova';$('#unlockBtn').onclick=()=>location.reload();$('#lockError').textContent=e?.message||'Errore di inizializzazione'}})();
