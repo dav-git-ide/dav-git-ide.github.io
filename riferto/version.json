@@ -1,5 +1,5 @@
 {
-  "version": "0.12.6",
-  "releasedAt": "2026-08-30T14:06:00+02:00",
-  "notes": "Matrice Trend rifinita per iPhone: nomi esame lunghi vanno a capo senza deformare la tabella, sigle come MCHC/MCV restano in evidenza con descrizione sotto, LOINC resta separato e le colonne dei valori mantengono larghezza stabile."
+  "version": "0.13.0",
+  "releasedAt": "2026-08-30T18:18:00+02:00",
+  "notes": "Nuova gestione famiglia con più persone, filtro globale dei referti e Trend per persona, preferenza unità ricordata per persona + struttura + esame, layout Trend responsive portrait/landscape e nuova icona PWA che rappresenta referti, tempo e archivio locale privato."
 }
