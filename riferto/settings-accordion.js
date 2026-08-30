@@ -6,7 +6,8 @@ const icons={
   data:`<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 5.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6M5 11.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>`,
   app:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 7h6M10 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
   language:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17M12 3c2.4 2.4 3.5 5.4 3.5 9S14.4 18.6 12 21M12 3C9.6 5.4 8.5 8.4 8.5 12s1.1 6.6 3.5 9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
-  support:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11v5.5A5.5 5.5 0 0 1 10.5 19h0A5.5 5.5 0 0 1 5 13.5V8Zm11 2h1.5a2.5 2.5 0 0 1 0 5H16M7 4.5c0 1 1 1 1 2M11 4.5c0 1 1 1 1 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  support:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11v5.5A5.5 5.5 0 0 1 10.5 19h0A5.5 5.5 0 0 1 5 13.5V8Zm11 2h1.5a2.5 2.5 0 0 1 0 5H16M7 4.5c0 1 1 1 1 2M11 4.5c0 1 1 1 1 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  legal:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.5v6M12 7.2h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
 };
 
 const style=document.createElement('style');
@@ -35,6 +36,7 @@ function cardMeta(card){
   if(card.id==='settingsUpdateAvailable')return{icon:'update',title:'Aggiornamento disponibile',subtitle:'Nuova versione di Riferto'};
   if(card.classList.contains('data-tools-card'))return{icon:'data',title:'Dati e strumenti',subtitle:'Backup, ripristino e catalogo LOINC'};
   if(card.classList.contains('support-card'))return{icon:'support',title:'Supporta Riferto',subtitle:'Buy me a coffee'};
+  if(card.classList.contains('legal-card'))return{icon:'legal',title:'Informazioni',subtitle:'Licenza, copyright e LOINC'};
   const heading=card.querySelector('h3')?.textContent?.trim()||'Impostazioni';
   if(/accesso|sicurezza/i.test(heading))return{icon:'security',title:'Sicurezza',subtitle:'Face ID, PIN e blocco archivio'};
   if(/aggiornamento/i.test(heading))return{icon:'app',title:'Aggiornamento app',subtitle:'Versione e aggiornamenti'};
@@ -59,5 +61,9 @@ function compactCard(card){
   card.replaceWith(details);
 }
 
-function compactAll(){[...(settingsStack?.querySelectorAll(':scope > article.settings-card')||[])].forEach(compactCard)}
-if(settingsStack){compactAll();new MutationObserver(compactAll).observe(settingsStack,{childList:true})}
+function reorder(){
+  const support=settingsStack?.querySelector(':scope > .support-card');
+  if(support&&settingsStack.firstElementChild!==support)settingsStack.prepend(support);
+}
+function compactAll(){[...(settingsStack?.querySelectorAll(':scope > article.settings-card')||[])].forEach(compactCard);reorder()}
+if(settingsStack){compactAll();new MutationObserver(()=>{compactAll();reorder()}).observe(settingsStack,{childList:true})}
