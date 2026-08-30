@@ -1,5 +1,5 @@
 {
-  "version": "0.13.0",
-  "releasedAt": "2026-08-30T18:18:00+02:00",
-  "notes": "Nuova gestione famiglia con più persone, filtro globale dei referti e Trend per persona, preferenza unità ricordata per persona + struttura + esame, layout Trend responsive portrait/landscape e nuova icona PWA che rappresenta referti, tempo e archivio locale privato."
+  "version": "0.13.1",
+  "releasedAt": "2026-08-30T18:34:00+02:00",
+  "notes": "Correzione portrait: Trend e filtri non restano più visibili entrando in Impostazioni; barra persona nascosta nella sezione Impostazioni; card aggiornamento evidenziata in rosso; aggiunto avviso backup locale, changelog nell'app e sul web e documentazione GitHub aggiornata."
 }
