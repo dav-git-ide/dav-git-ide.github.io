@@ -1,5 +1,5 @@
 {
-  "version": "0.12.1",
-  "releasedAt": "2026-08-30T09:12:00+02:00",
-  "notes": "Barra inferiore forzata su una sola riga con tre sezioni uguali; durante la creazione di un nuovo referto la modalità Visualizza/Modifica resta nascosta fino a quando il referto non viene riaperto dopo il salvataggio; unità di misura ridisposte su più righe e g/L resa chiaramente disponibile insieme a g/dL, %, pg, fL e potenze per litro."
+  "version": "0.12.2",
+  "releasedAt": "2026-08-30T10:11:00+02:00",
+  "notes": "Correzioni alla vista referto con titolo coerente Visualizza/Modifica, icone nei selettori e freccia rimossa in sola visualizzazione; Impostazioni a fisarmonica con apertura singola e autoscroll alla sezione; Trend ampliato con tutti gli esami, filtri, preferiti persistenti, periodi dinamici, vista grafico, dettaglio cronologico e matrice esami per data."
 }
