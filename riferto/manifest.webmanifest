@@ -7,5 +7,12 @@
   "background_color": "#eef4ff",
   "theme_color": "#eef4ff",
   "description": "Riferto — i tuoi referti, sul tuo dispositivo.",
-  "icons": []
+  "icons": [
+    {
+      "src": "./icon-riferto.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
