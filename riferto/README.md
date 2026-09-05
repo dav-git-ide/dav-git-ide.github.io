@@ -6,7 +6,7 @@ Riferto è una PWA local-first per archiviare referti sanitari, PDF originali e 
 
 ## Versione
 
-0.7.0 — clean rebuild.
+0.13.3
 
 ## Privacy e sicurezza
 
@@ -16,7 +16,7 @@ Riferto è una PWA local-first per archiviare referti sanitari, PDF originali e 
 - Chiave del vault casuale a 256 bit.
 - PIN usato tramite PBKDF2-SHA-256 (310000 iterazioni) per proteggere la chiave del vault.
 - Nome del PDF cifrato insieme ai metadati del PDF.
-- Backup JSON portabile cifrato con password separata.
+- Backup `.riferto` cifrato con password separata.
 - Nessun dato sanitario viene inviato a GitHub Pages: GitHub ospita solo file statici.
 
 Il valore PBKDF2 di 310000 iterazioni è un parametro implementativo del progetto, non una dichiarazione di conformità o una raccomandazione normativa.
@@ -29,11 +29,17 @@ Il comportamento reale su specifiche versioni di iOS/Safari/PWA e Android/Chrome
 
 ## Aggiornamenti PWA
 
-Il pulsante **Aggiorna app** forza il controllo del service worker, rimuove il service worker dello scope `/riferto/`, elimina solo le cache `riferto-*` e ricarica con un parametro anti-cache. Non elimina intenzionalmente IndexedDB `riferto-db`.
+Il pulsante **Aggiorna app** forza il controllo del service worker, elimina solo le cache `riferto-*` e ricarica la PWA con una build aggiornata. IndexedDB `riferto-db` non viene cancellato intenzionalmente.
 
 ## LOINC
 
 Il catalogo incluso è un sottoinsieme iniziale di esami comuni. LOINC® è un marchio registrato di Regenstrief Institute, Inc. Prima di distribuire un catalogo LOINC completo occorre verificare le condizioni di licenza e attribuzione applicabili.
+
+## Link
+
+- App: https://making-lemonade.github.io/riferto/
+- Repository: https://github.com/making-lemonade/riferto
+- Changelog: https://making-lemonade.github.io/riferto/changelog.html
 
 ## Supporto
 
