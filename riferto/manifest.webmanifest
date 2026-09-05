@@ -1,12 +1,15 @@
 {
+  "id": "./",
   "name": "Riferto",
   "short_name": "Riferto",
+  "lang": "it",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#eef4ff",
   "theme_color": "#eef4ff",
   "description": "Riferto — i tuoi referti, sul tuo dispositivo.",
+  "categories": ["medical", "productivity", "utilities"],
   "icons": [
     {
       "src": "./icon-riferto.svg",
