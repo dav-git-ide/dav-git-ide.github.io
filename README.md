@@ -30,19 +30,19 @@ Riferto non è un dispositivo medico e non fornisce diagnosi o interpretazioni c
 
 ## Versione corrente
 
-**v0.13.2**
+**v0.13.3**
 
-Consulta [CHANGELOG.md](./CHANGELOG.md) per la cronologia delle modifiche oppure la pagina web [Changelog Riferto](https://give-me-lemons.github.io/riferto/changelog.html).
+Consulta [CHANGELOG.md](./CHANGELOG.md) per la cronologia delle modifiche oppure la pagina web [Changelog Riferto](https://making-lemonade.github.io/riferto/changelog.html).
 
 ## App
 
 Riferto è disponibile come PWA su:
 
-https://give-me-lemons.github.io/riferto/
+https://making-lemonade.github.io/riferto/
 
 ## Repository
 
-https://github.com/give-me-lemons/riferto
+https://github.com/making-lemonade/riferto
 
 ## Standard
 
