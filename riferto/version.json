@@ -1,5 +1,5 @@
 {
-  "version": "0.13.3",
-  "releasedAt": "2026-09-05T12:07:00+02:00",
-  "notes": "Aggiornati tutti i riferimenti GitHub al nuovo account making-lemonade; aggiornati link di PWA, repository e changelog; aggiunto il repository nelle informazioni dell'app; rifinito il design responsive con layout desktop/tablet migliorato, impostazioni a griglia e bottom navigation a tre sezioni."
+  "version": "0.13.4",
+  "releasedAt": "2026-09-05T13:24:00+02:00",
+  "notes": "Corretto il deployment GitHub Pages per pubblicare direttamente la PWA; aggiunta la gestione dell'URL sorgente aggiornamenti nelle Impostazioni; nuova icona PWA senza orologio con referto, provetta e scudo/lucchetto; nome PWA fissato a Riferto; service worker reso indipendente dal percorso hard-coded."
 }
