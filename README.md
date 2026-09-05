@@ -1,53 +1,94 @@
-# Riferto
+<div align="center">
+  <img src="./riferto/icon-riferto.svg" width="96" height="96" alt="Riferto logo">
 
-**I tuoi referti. Sul tuo dispositivo.**
+  # Riferto
 
-Riferto è una PWA per archiviare referti medici, PDF allegati e valori strutturati direttamente sul dispositivo dell'utente. L'archivio locale è cifrato e protetto da PIN; l'app non richiede un server per conservare i referti.
+  **Your reports. On your device.**
 
-## Funzioni principali
+  Private, local-first PWA for medical reports, structured lab values and PDF attachments.
 
-- Archivio locale cifrato di referti e PDF.
-- Codici LOINC e normalizzazione delle unità orientata a UCUM quando la conversione è sicura.
-- Trend nel tempo con grafico, dettaglio e matrice.
-- Layout responsive distinto per portrait e landscape.
-- Gestione di più persone/familiari nello stesso archivio.
-- Filtri di Referti e Trend in base alla persona selezionata.
-- Preferenza dell'unità ricordata per combinazione **persona + struttura/laboratorio + esame**.
-- Backup cifrato esportabile e successivamente importabile.
-- PWA installabile su iPhone/iPad e dispositivi compatibili.
+  [Open Riferto](https://making-lemonade.github.io/riferto/) · [Changelog](./CHANGELOG.md) · [Italiano](./README.it.md) · **English**
 
-## Privacy e backup
+  <br>
 
-Riferto mantiene i dati sanitari sul dispositivo. Eliminare la PWA o cancellare i dati del sito può eliminare l'archivio locale.
+  ![Version](https://img.shields.io/badge/version-0.13.3-1764e8?style=flat-square)
+  ![PWA](https://img.shields.io/badge/PWA-installable-1764e8?style=flat-square)
+  ![Storage](https://img.shields.io/badge/storage-local--first-23735b?style=flat-square)
+  ![Encryption](https://img.shields.io/badge/vault-AES--GCM-23735b?style=flat-square)
+</div>
 
-Dalla v0.13.2 il formato principale di backup è un file **`.riferto`**. Internamente contiene un pacchetto ZIP strutturato con manifest, database, persone, impostazioni e allegati PDF. Ogni elemento è verificato tramite SHA-256 e il pacchetto completo viene cifrato con AES-GCM prima del salvataggio.
+---
 
-Il ripristino è fail-safe: Riferto verifica prima password, cifratura, struttura ZIP, CRC, file richiesti e checksum. Se un controllo fallisce, il database locale non viene modificato. La scrittura finale avviene in una singola transazione IndexedDB.
+## What is Riferto?
 
-È consigliato conservare il file `.riferto` fuori dall'app, ad esempio in File o iCloud Drive. La password del backup è necessaria per il ripristino. I vecchi backup JSON restano importabili per compatibilità.
+Riferto is a personal health-record PWA designed to keep medical reports **on the user's device**. It stores reports, original PDF attachments and structured values in a local archive protected by a PIN.
 
-Riferto non è un dispositivo medico e non fornisce diagnosi o interpretazioni cliniche.
+It does not require an application server to store your reports. GitHub Pages hosts the static application files; health data is kept in the browser/PWA local storage used by Riferto.
 
-## Versione corrente
+### Highlights
+
+| | Feature |
+|---|---|
+| 🔐 | Encrypted local archive for reports and PDF attachments |
+| 👥 | Multiple people / family profiles in the same archive |
+| 📈 | Trends over time with chart, detail and matrix views |
+| 🧪 | LOINC codes and conservative UCUM-oriented unit normalization |
+| 📄 | Multiple original PDF attachments per report |
+| 💾 | Encrypted `.riferto` backup format with integrity verification |
+| 📱 | Installable PWA with responsive portrait and landscape layouts |
+
+## Privacy and security
+
+The report vault and PDF content are encrypted locally. Riferto uses a random 256-bit vault key and AES-GCM for protected data; the PIN protects access to the vault key through a PBKDF2-SHA-256 based mechanism.
+
+Riferto is local-first, but local browser/PWA storage is **not a backup**. Removing the PWA or clearing site data may delete the local archive.
+
+### Backup format
+
+Since v0.13.2, the primary backup is a **`.riferto`** file. Its logical contents include:
+
+```text
+manifest.json
+database/
+people.json
+settings.json
+pdf/
+```
+
+The package is integrity-checked with SHA-256 and ZIP CRC checks, then encrypted with AES-GCM before export. Restore validation runs before the local database is replaced; a corrupted or incomplete package is rejected instead of being silently imported partially.
+
+Keep exported backups outside the app, for example in Files, iCloud Drive or another storage location you control. The backup password is required for recovery. Legacy JSON backups remain importable for compatibility.
+
+## Current version
 
 **v0.13.3**
 
-Consulta [CHANGELOG.md](./CHANGELOG.md) per la cronologia delle modifiche oppure la pagina web [Changelog Riferto](https://making-lemonade.github.io/riferto/changelog.html).
+See the [project changelog](./CHANGELOG.md) or the [web changelog](https://making-lemonade.github.io/riferto/changelog.html).
 
-## App
+## Install
 
-Riferto è disponibile come PWA su:
+Open:
 
-https://making-lemonade.github.io/riferto/
+**https://making-lemonade.github.io/riferto/**
 
-## Repository
+On iPhone/iPad, open the page in Safari and use **Share → Add to Home Screen**. Riferto initializes the local archive when launched as the installed PWA.
 
-https://github.com/making-lemonade/riferto
+## Standards
 
-## Standard
+LOINC® is a registered trademark of Regenstrief Institute, Inc. Riferto preserves the unit reported by the laboratory and only applies normalization when a compatible conversion is explicitly supported.
 
-LOINC® è un marchio registrato di Regenstrief Institute, Inc. Le unità vengono conservate anche nella forma originale del referto; la normalizzazione viene applicata solo quando l'app dispone di una conversione compatibile.
+## Medical disclaimer
 
-## Licenza e utilizzo
+Riferto is a personal archive. It is **not a medical device** and does not provide diagnoses or medical interpretations.
 
-© 2026 Riferto. Tutti i diritti riservati. Vietati riutilizzo, redistribuzione, rivendita, white-label e uso commerciale del software o di parti sostanziali del codice senza autorizzazione scritta.
+## License and use
+
+© 2026 Riferto. All rights reserved.
+
+Reuse, redistribution, resale, white-labeling and commercial use of the software or substantial portions of the source code are prohibited without prior written authorization from the rights holder.
+
+---
+
+<div align="center">
+  <sub>Riferto · local-first personal health archive</sub>
+</div>
