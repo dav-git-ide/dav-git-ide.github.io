@@ -1,0 +1,20 @@
+:root{--surface:rgba(255,255,255,.78);--surface-strong:rgba(255,255,255,.92);--blue:#1f73e8;--blue-deep:#155fc6;--hairline:rgba(63,82,112,.12);--shadow-soft:0 10px 30px rgba(39,71,117,.09)}
+body{background:linear-gradient(180deg,#edf4ff 0%,#f8fbff 46%,#f1f4f9 100%)}
+.app-shell{width:min(100%,920px)}
+.topbar{background:rgba(250,252,255,.82);border-color:rgba(255,255,255,.88);box-shadow:0 10px 34px rgba(37,66,105,.10)}
+.hero{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(240,247,255,.76));border-color:rgba(255,255,255,.92);box-shadow:0 16px 44px rgba(39,71,117,.10)}
+.hero:after{content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-92px;top:-105px;background:radial-gradient(circle,rgba(45,134,255,.18),rgba(45,134,255,0) 70%);pointer-events:none}
+.card,.report-card,.settings-card,.empty-state{background:var(--surface);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow-soft)}
+.stat-card{min-height:104px;display:flex;flex-direction:column;justify-content:center}.stat-card strong{letter-spacing:-.04em}
+.primary-btn{background:linear-gradient(180deg,var(--blue),var(--blue-deep));box-shadow:0 10px 22px rgba(28,104,220,.22);transition:transform .14s ease,box-shadow .14s ease,filter .14s ease}.primary-btn:active{transform:translateY(1px);box-shadow:0 6px 14px rgba(28,104,220,.18)}
+.secondary-btn,.glass-control{background:rgba(255,255,255,.78);border-color:rgba(96,118,151,.12);box-shadow:0 4px 12px rgba(39,71,117,.05)}
+.settings-header{padding:14px 6px 12px}.settings-header h2{font-size:clamp(2rem,7vw,2.5rem);margin-bottom:6px}.settings-stack{gap:12px}.settings-card{border-radius:24px}.settings-card h3{font-size:1.08rem;letter-spacing:-.015em}.settings-disclosure{border-top-color:var(--hairline)}
+.bottom-nav{grid-template-columns:repeat(3,1fr)!important;max-width:680px!important;margin-left:auto!important;margin-right:auto!important;left:12px!important;right:12px!important;padding:6px!important;border-radius:24px!important;background:rgba(247,250,255,.95)!important;box-shadow:0 12px 36px rgba(34,65,108,.22)!important}.bottom-nav-btn{min-height:56px;border-radius:18px}.bottom-nav-btn.active{background:rgba(255,255,255,.98);box-shadow:0 6px 18px rgba(44,95,165,.12)}.nav-icon svg{width:21px;height:21px;display:block}
+.field input,.field textarea{background:rgba(255,255,255,.82);border-color:rgba(94,116,150,.14)}
+.report-card{transition:transform .15s ease,box-shadow .15s ease}.report-card:active{transform:scale(.997)}
+.version-badge{background:rgba(37,115,232,.09);color:#2c5f9f}
+.repo-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;margin-top:10px;width:100%}
+.repo-link svg{width:17px;height:17px}
+@media(min-width:760px){.app-shell{padding-left:22px;padding-right:22px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px;padding:30px}.hero .primary-btn{width:auto;min-width:160px;margin:0}.settings-stack{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.settings-stack>.data-tools-card,.settings-stack>.backup-warning-card,.settings-stack>.changelog-card,.settings-stack>.update-available-card{grid-column:1/-1}.support-card,.legal-card{height:100%}.report-card{padding:20px}}
+@media(max-width:620px){.app-shell{padding-bottom:calc(env(safe-area-inset-bottom) + 104px)}.topbar{padding:13px 15px;border-radius:22px}.hero{padding:20px;border-radius:24px}.hero h2{font-size:clamp(1.7rem,8vw,2.15rem)}.card,.report-card,.settings-card{border-radius:22px}.settings-card{padding:18px}.bottom-nav{left:8px!important;right:8px!important;bottom:max(7px,env(safe-area-inset-bottom))!important}.bottom-nav-btn{font-size:.69rem}.settings-header{padding-left:4px;padding-right:4px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.primary-btn,.report-card{transition:none!important}}
