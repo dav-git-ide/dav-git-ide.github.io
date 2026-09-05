@@ -11,7 +11,7 @@
 
   <br>
 
-  ![Versione](https://img.shields.io/badge/versione-0.13.3-1764e8?style=flat-square)
+  ![Versione](https://img.shields.io/badge/versione-0.13.4-1764e8?style=flat-square)
   ![PWA](https://img.shields.io/badge/PWA-installabile-1764e8?style=flat-square)
   ![Storage](https://img.shields.io/badge/storage-local--first-23735b?style=flat-square)
   ![Cifratura](https://img.shields.io/badge/vault-AES--GCM-23735b?style=flat-square)
@@ -61,7 +61,7 @@ Conserva i backup fuori dall'app, per esempio in File, iCloud Drive o un'altra d
 
 ## Versione corrente
 
-**v0.13.3**
+**v0.13.4**
 
 Consulta il [changelog del progetto](./CHANGELOG.md) oppure il [changelog web](https://making-lemonade.github.io/riferto/changelog.html).
 
