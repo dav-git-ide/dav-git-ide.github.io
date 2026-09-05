@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.13.3 — 2026-09-05
+- Aggiornati i riferimenti GitHub al nuovo account `making-lemonade`.
+- Aggiornati i link pubblici a repository, PWA e changelog.
+- Aggiunto il collegamento al repository direttamente nelle informazioni dell'app.
+- Rifinito il design generale con superfici più pulite, spaziature più coerenti e migliore leggibilità.
+- Migliorato il layout desktop/tablet con contenuto più ampio e Impostazioni organizzate su due colonne quando c'è spazio.
+- Corretta e resa esplicita la bottom navigation a tre sezioni: Referti, Trend e Impostazioni.
+- Migliorato il comportamento responsive su schermi piccoli e grandi.
+
 ## v0.13.2 — 2026-08-30
 - Nuovo formato di backup `.riferto`.
 - Il contenuto viene organizzato come ZIP con `manifest.json`, database, persone, impostazioni e allegati PDF.
