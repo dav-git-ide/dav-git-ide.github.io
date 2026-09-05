@@ -1,5 +1,5 @@
 {
-  "version": "0.13.2",
-  "releasedAt": "2026-08-30T19:02:00+02:00",
-  "notes": "Nuovo formato backup .riferto: pacchetto ZIP strutturato con database, persone, impostazioni e PDF; checksum SHA-256 e CRC; cifratura AES-GCM; ripristino fail-safe e atomico che blocca qualsiasi importazione se il backup è corrotto o incompleto; compatibilità mantenuta con i vecchi backup JSON."
+  "version": "0.13.3",
+  "releasedAt": "2026-09-05T12:07:00+02:00",
+  "notes": "Aggiornati tutti i riferimenti GitHub al nuovo account making-lemonade; aggiornati link di PWA, repository e changelog; aggiunto il repository nelle informazioni dell'app; rifinito il design responsive con layout desktop/tablet migliorato, impostazioni a griglia e bottom navigation a tre sezioni."
 }
