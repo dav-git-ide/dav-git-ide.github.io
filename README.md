@@ -11,7 +11,7 @@
 
   <br>
 
-  ![Version](https://img.shields.io/badge/version-0.13.3-1764e8?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-0.13.4-1764e8?style=flat-square)
   ![PWA](https://img.shields.io/badge/PWA-installable-1764e8?style=flat-square)
   ![Storage](https://img.shields.io/badge/storage-local--first-23735b?style=flat-square)
   ![Encryption](https://img.shields.io/badge/vault-AES--GCM-23735b?style=flat-square)
@@ -61,7 +61,7 @@ Keep exported backups outside the app, for example in Files, iCloud Drive or ano
 
 ## Current version
 
-**v0.13.3**
+**v0.13.4**
 
 See the [project changelog](./CHANGELOG.md) or the [web changelog](https://making-lemonade.github.io/riferto/changelog.html).
 
