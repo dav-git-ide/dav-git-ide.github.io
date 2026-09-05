@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.13.4 — 2026-09-05
+- Corretto il deployment GitHub Pages: viene pubblicata direttamente la PWA invece della root Jekyll/README.
+- Aggiunta in **Impostazioni → Aggiornamento** la gestione dell'URL sorgente usato per controllare nuove versioni.
+- È possibile salvare, aprire o ripristinare l'URL predefinito dell'app.
+- Se l'URL passa a un dominio diverso, Riferto avvisa che l'archivio locale non può essere trasferito automaticamente tra origini diverse e richiede prima un backup `.riferto`.
+- Nuova icona PWA senza orologio: documento/referto, provetta/esame e scudo con lucchetto per rappresentare privacy e dati sanitari.
+- Nome PWA esplicitamente impostato a **Riferto** nel manifest e nei metadati dell'app.
+- Aggiornata la gestione del service worker per non dipendere da un percorso `/riferto/` codificato nel codice.
+
 ## v0.13.3 — 2026-09-05
 - Aggiornati i riferimenti GitHub al nuovo account `making-lemonade`.
 - Aggiornati i link pubblici a repository, PWA e changelog.
@@ -33,7 +42,7 @@
 - Selettore persona globale e filtri coerenti in Referti e Trend.
 - Preferenza unità per persona + struttura/laboratorio + esame.
 - Layout Trend distinto per portrait e landscape.
-- Nuova icona PWA con concetti di referto, tempo e archivio privato locale.
+- Nuova icona PWA dedicata all'archivio sanitario locale.
 
 ## v0.12.6
 - Migliorata la matrice Trend su mobile.
