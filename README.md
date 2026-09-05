@@ -32,13 +32,17 @@ Riferto non è un dispositivo medico e non fornisce diagnosi o interpretazioni c
 
 **v0.13.2**
 
-Consulta [CHANGELOG.md](./CHANGELOG.md) per la cronologia delle modifiche oppure la pagina web [Changelog Riferto](https://dav-git-ide.github.io/riferto/changelog.html).
+Consulta [CHANGELOG.md](./CHANGELOG.md) per la cronologia delle modifiche oppure la pagina web [Changelog Riferto](https://give-me-lemons.github.io/riferto/changelog.html).
 
 ## App
 
 Riferto è disponibile come PWA su:
 
-https://dav-git-ide.github.io/riferto/
+https://give-me-lemons.github.io/riferto/
+
+## Repository
+
+https://github.com/give-me-lemons/riferto
 
 ## Standard
 
