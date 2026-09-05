@@ -1,4 +1,4 @@
-const APP_VERSION='0.13.2';
+const APP_VERSION='0.13.3';
 const DB_NAME='riferto-db';
 const DB_VERSION=1;
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
